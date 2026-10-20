@@ -231,7 +231,7 @@ body.is-loading .nav { opacity: 0; transform: translateY(-12px); }
   transition: opacity 0.8s ease 0.35s, clip-path 1.8s var(--ease-inout) 0.35s;
 }
 body:not(.is-loading) .hero__watch { opacity: 1; clip-path: circle(75% at 50% 50%); }
-.hero__watch .watch { width: 100%; height: 100%; transform-style: preserve-3d; will-change: transform; filter: drop-shadow(0 60px 80px rgba(0, 0, 0, 0.7)); }
+.hero__watch .watch { width: 100%; height: 100%; will-change: transform; filter: drop-shadow(0 60px 80px rgba(0, 0, 0, 0.7)); }
 .hero__title {
   position: relative; z-index: 2; margin-top: auto;
   font: 600 clamp(5.4rem, 18.5vw, 23rem)/0.82 var(--font-display);
@@ -316,7 +316,7 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
 .card:hover::after { opacity: 1; }
 .card__num { position: absolute; top: 1.6rem; left: 2rem; color: var(--gold); font-family: var(--font-display); font-style: italic; font-size: 1.3rem; letter-spacing: 0; text-transform: none; }
 .card__watch { width: 64%; margin: 2rem auto 0; perspective: 1200px; flex: 1 1 auto; display: grid; place-items: center; min-height: 0; }
-.card__watch .watch { width: 100%; height: auto; aspect-ratio: 1; max-height: 100%; transform-style: preserve-3d; transition: transform 0.9s var(--ease-out); filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.6)); }
+.card__watch .watch { width: 100%; height: auto; aspect-ratio: 1; max-height: 100%; transition: transform 0.9s var(--ease-out); filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.6)); }
 .card:hover .card__watch .watch { transform: scale(1.04); }
 .card__body { display: grid; gap: 0.45rem; margin-top: 1.5rem; position: relative; z-index: 1; }
 .card__name { font: 400 clamp(1.8rem, 2.6vw, 2.6rem)/1 var(--font-display); }
