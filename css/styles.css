@@ -497,7 +497,8 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; scroll-behavior: auto !important; }
   .grain { animation: none; }
-  [data-reveal], .split-lines .w__i, .hero__title .c, .hero__sub, .hero__ctas, .hero__watch, .footer__wordmark span { opacity: 1 !important; transform: none !important; }
+  [data-reveal], .split-lines .w__i, .hero__title .c, .hero__sub, .hero__ctas, .footer__wordmark span { opacity: 1 !important; transform: none !important; }
+  .hero__watch { opacity: 1 !important; clip-path: none !important; }
   .manifesto__text .w__i { opacity: 1 !important; }
   .loader { display: none; }
 }
