@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orrery — Instruments of Time</title>
+<meta name="description" content="Orrery is a fictional Geneva maison making nine planetarium wristwatches a year. A one-page demonstration of scroll, cursor and motion design.">
+<meta name="theme-color" content="#07070a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%23c9a45c' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23c9a45c'/%3E%3Ccircle cx='52' cy='32' r='3' fill='%23ece6da'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="is-loading">
+
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><i></i></div>
+<div class="cursor" aria-hidden="true">
+  <div class="cursor__dot"></div>
+  <div class="cursor__ring"><span class="cursor__label"></span></div>
+</div>
+
+<!-- Preloader -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__panel loader__panel--top"></div>
+  <div class="loader__panel loader__panel--bottom"></div>
+  <div class="loader__inner">
+    <svg class="loader__ring" viewBox="0 0 120 120" aria-hidden="true">
+      <circle class="loader__track" cx="60" cy="60" r="54"/>
+      <circle class="loader__arc" cx="60" cy="60" r="54"/>
+      <circle class="loader__planet" cx="114" cy="60" r="3"/>
+    </svg>
+    <div class="loader__count" id="loaderCount">000</div>
+    <div class="loader__status" id="loaderStatus">Calibrating escapement</div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<header class="nav" id="nav">
+  <a class="nav__logo" href="#top" data-cursor="Top">
+    <svg class="nav__mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="16" cy="16" r="2.2" fill="currentColor"/><circle class="nav__orbiter" cx="29" cy="16" r="1.8" fill="currentColor"/></svg>
+    <span>Orrery</span>
+  </a>
+  <nav class="nav__links" aria-label="Primary">
+    <a href="#anatomy" data-scramble>Anatomy</a>
+    <a href="#collection" data-scramble>Collection</a>
+    <a href="#planetarium" data-scramble>Planetarium</a>
+    <a href="#atelier" data-scramble>Atelier</a>
+    <a href="#reserve" data-scramble>Reserve</a>
+  </nav>
+  <div class="nav__right">
+    <span class="nav__time" id="navTime" aria-label="Current time in Geneva">GVA 00:00:00</span>
+    <button class="nav__sound" id="soundToggle" type="button" aria-pressed="false" data-cursor="Tick">
+      <span class="nav__sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="nav__sound-label">Sound</span>
+    </button>
+    <button class="nav__menu" id="menuToggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+  </div>
+</header>
+
+<!-- Mobile menu -->
+<div class="menu" id="menu" aria-hidden="true">
+  <button class="menu__close" id="menuClose" type="button">Close</button>
+  <nav class="menu__links" aria-label="Mobile">
+    <a href="#anatomy"><span>I</span>Anatomy</a>
+    <a href="#collection"><span>II</span>Collection</a>
+    <a href="#planetarium"><span>III</span>Planetarium</a>
+    <a href="#atelier"><span>IV</span>Atelier</a>
+    <a href="#reserve"><span>V</span>Reserve</a>
+  </nav>
+  <p class="menu__foot">Rue du Rhône 13 · Genève</p>
+</div>
+
+<main id="main">
+
+  <!-- HERO -->
+  <section class="hero" id="top" data-bg="#07070a">
+    <canvas class="hero__gl" id="heroGL" aria-hidden="true"></canvas>
+    <div class="hero__fallback" aria-hidden="true"></div>
+
+    <div class="hero__inner">
+      <p class="hero__eyebrow mono" id="heroEyebrow" data-text="Maison d'horlogerie · Genève · Est. MMXXVI">Maison d'horlogerie · Genève · Est. MMXXVI</p>
+
+      <div class="hero__watch" id="heroWatch" aria-hidden="true"></div>
+
+      <h1 class="hero__title" id="heroTitle">Orrery</h1>
+
+      <div class="hero__foot">
+        <p class="hero__sub" id="heroSub">Instruments for those who keep their <em>own</em> time.</p>
+        <div class="hero__ctas">
+          <a class="btn magnetic" href="#reserve" data-cursor="">
+            <span class="btn__fill"></span>
+            <span class="btn__label">Request an audience</span>
+          </a>
+          <a class="link-arrow" href="#manifesto">Explore the calibre <i></i></a>
+        </div>
+      </div>
+
+      <div class="hero__meta mono" aria-hidden="true">
+        <span>Calibre OR-01</span>
+        <span>Planetarium complication</span>
+        <span>Nine pieces a year</span>
+      </div>
+      <div class="hero__coords mono" aria-hidden="true">46.2044° N<br>6.1432° E</div>
+      <div class="hero__scroll mono" aria-hidden="true"><span>Scroll</span><i></i></div>
+    </div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <section class="manifesto" id="manifesto" data-bg="#0a0a0e">
+    <div class="manifesto__inner">
+      <p class="section-label mono" data-reveal><span>I</span> Manifesto</p>
+      <p class="manifesto__text" id="manifestoText">A watch should not tell you the time. It should remind you that you are standing on a planet, falling around a star, at sixty-seven thousand miles an hour. Everything else is a complication.</p>
+      <p class="manifesto__sign" data-reveal>— A. Vautrin, founder</p>
+    </div>
+  </section>
+
+  <!-- ANATOMY (pinned exploded view) -->
+  <section class="anatomy" id="anatomy" data-bg="#07070a">
+    <div class="anatomy__pin">
+      <div class="anatomy__head">
+        <p class="section-label mono"><span>II</span> Anatomy</p>
+        <h2 class="anatomy__title">Anatomy of a <em>Perihelion</em></h2>
+      </div>
+
+      <div class="anatomy__stage-wrap">
+        <div class="anatomy__stage" id="anatomyStage"></div>
+      </div>
+
+      <aside class="anatomy__panel">
+        <div class="anatomy__index mono"><span id="anatomyIndex">01</span> / 07</div>
+        <div class="anatomy__line"><i id="anatomyLine"></i></div>
+        <h3 class="anatomy__name" id="anatomyName">Sapphire crystal</h3>
+        <p class="anatomy__desc" id="anatomyDesc">Box-domed, double anti-reflective. Nine on the Mohs scale; only diamond cuts it.</p>
+        <ol class="anatomy__list mono" id="anatomyList">
+          <li>Sapphire crystal</li>
+          <li>Bezel</li>
+          <li>Hands</li>
+          <li>Dial</li>
+          <li>Planetarium module</li>
+          <li>Calibre OR-01</li>
+          <li>Caseback</li>
+        </ol>
+      </aside>
+
+      <div class="anatomy__hint mono" aria-hidden="true">Keep scrolling to disassemble</div>
+    </div>
+  </section>
+
+  <!-- COLLECTION (pinned horizontal) -->
+  <section class="collection" id="collection" data-bg="#ece6da">
+    <div class="collection__pin">
+      <div class="collection__head">
+        <div class="collection__head-text">
+          <p class="section-label mono" data-reveal><span>III</span> Collection</p>
+          <h2 class="collection__title" data-reveal>Four calibres. <em>Nine</em> pieces each.</h2>
+        </div>
+        <p class="collection__hint mono" aria-hidden="true">Scroll to glide <i></i></p>
+      </div>
+      <div class="collection__track" id="collectionTrack">
+        <article class="card" data-variant="perihelion" data-cursor="View">
+          <div class="card__num mono">I</div>
+          <div class="card__watch"></div>
+          <div class="card__body">
+            <h3 class="card__name">Perihelion</h3>
+            <p class="card__spec mono">Yellow gold · Meteorite dial</p>
+            <p class="card__price mono">CHF 184,000</p>
+            <button class="card__cta" type="button"><span>Enquire</span></button>
+          </div>
+        </article>
+        <article class="card" data-variant="aphelion" data-cursor="View">
+          <div class="card__num mono">II</div>
+          <div class="card__watch"></div>
+          <div class="card__body">
+            <h3 class="card__name">Aphelion</h3>
+            <p class="card__spec mono">Platinum · Glacier enamel dial</p>
+            <p class="card__price mono">CHF 212,000</p>
+            <button class="card__cta" type="button"><span>Enquire</span></button>
+          </div>
+        </article>
+        <article class="card" data-variant="umbra" data-cursor="View">
+          <div class="card__num mono">III</div>
+          <div class="card__watch"></div>
+          <div class="card__body">
+            <h3 class="card__name">Umbra</h3>
+            <p class="card__spec mono">Black ceramic · Obsidian dial</p>
+            <p class="card__price mono">CHF 168,000</p>
+            <button class="card__cta" type="button"><span>Enquire</span></button>
+          </div>
+        </article>
+        <article class="card" data-variant="syzygy" data-cursor="View">
+          <div class="card__num mono">IV</div>
+          <div class="card__watch"></div>
+          <div class="card__body">
+            <h3 class="card__name">Syzygy</h3>
+            <p class="card__spec mono">Rose gold · Grand feu bone enamel</p>
+            <p class="card__price mono">CHF 196,000</p>
+            <button class="card__cta" type="button"><span>Enquire</span></button>
+          </div>
+        </article>
+        <div class="card card--end">
+          <p class="card__end-text">Each piece is numbered <span class="mono">001–009</span> and never remade.</p>
+          <a class="btn btn--dark magnetic" href="#reserve"><span class="btn__fill"></span><span class="btn__label">Request an audience</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANETARIUM -->
+  <section class="planetarium" id="planetarium" data-bg="#0a0912">
+    <canvas class="planetarium__canvas" id="planetariumCanvas" aria-hidden="true"></canvas>
+    <div class="planetarium__inner">
+      <div class="planetarium__copy">
+        <p class="section-label mono" data-reveal><span>IV</span> Planetarium</p>
+        <h2 class="planetarium__title" data-reveal>The sky, <em>worn.</em></h2>
+        <p class="planetarium__text" data-reveal>The Perihelion complication tracks the true heliocentric position of six planets. Set once at the atelier, it needs no correction for 1,142 years. Move your cursor to bend the orbits. The mechanism will forgive you.</p>
+        <dl class="planetarium__stats" data-reveal>
+          <div><dt class="mono">Planets</dt><dd><span data-count="6">0</span></dd></div>
+          <div><dt class="mono">Years to drift a day</dt><dd><span data-count="1142">0</span></dd></div>
+          <div><dt class="mono">Gear ratio</dt><dd><span data-count="3109" data-decimals="0">0</span>:1</dd></div>
+        </dl>
+      </div>
+      <div class="planetarium__hud mono" id="planetariumHud" aria-hidden="true">
+        <span>Epoch <b id="hudEpoch">J2026.80</b></span>
+        <span>Rate <b id="hudRate">×2,400</b></span>
+        <span>Earth λ <b id="hudLon">000°</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ATELIER -->
+  <section class="atelier" id="atelier" data-bg="#0d0b09">
+    <div class="atelier__inner">
+      <div class="atelier__copy">
+        <p class="section-label mono" data-reveal><span>V</span> Atelier</p>
+        <h2 class="atelier__title" data-reveal>Eleven people. Nine watches. <em>One year.</em></h2>
+        <p class="atelier__text" data-reveal>Every Orrery is finished by hand in a workshop above the Rhône. We do not have a production line. We have a table, eleven pairs of hands, and a rose engine built in 1911.</p>
+      </div>
+      <div class="atelier__engine" data-reveal>
+        <canvas class="atelier__canvas" id="guillocheCanvas" aria-hidden="true"></canvas>
+        <p class="atelier__caption mono">Rose-engine guilloché · 1,440 passes · rendered live. Move to disturb the engine.</p>
+      </div>
+    </div>
+    <dl class="stats" data-reveal>
+      <div class="stats__item"><dd><span data-count="412">0</span></dd><dt class="mono">Components</dt></div>
+      <div class="stats__item"><dd><span data-count="72">0</span>h</dd><dt class="mono">Power reserve</dt></div>
+      <div class="stats__item"><dd><span data-count="9">0</span></dd><dt class="mono">Pieces a year</dt></div>
+      <div class="stats__item"><dd><span data-count="1142">0</span></dd><dt class="mono">Years before a day's drift</dt></div>
+      <div class="stats__item"><dd><span data-count="0">0</span></dd><dt class="mono">Shortcuts</dt></div>
+    </dl>
+    <div class="marquee" id="marquee" aria-hidden="true">
+      <div class="marquee__track" id="marqueeTrack">
+        <span>Orrery</span><i></i><span>Genève</span><i></i><span>Calibre OR-01</span><i></i><span>Planetarium</span><i></i><span>Nine pieces a year</span><i></i><span>Hand-finished</span><i></i>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESERVE -->
+  <section class="reserve" id="reserve" data-bg="#07070a">
+    <div class="reserve__glow" aria-hidden="true"></div>
+    <div class="reserve__inner">
+      <p class="section-label mono" data-reveal><span>VI</span> Reserve</p>
+      <h2 class="reserve__title" id="reserveTitle">Keep your <em>own</em> time.</h2>
+      <p class="reserve__text" data-reveal>Allocation opens twice a year, to a list we keep by hand. Leave an address and we will write to you. On paper.</p>
+      <form class="reserve__form" id="reserveForm" data-reveal novalidate>
+        <label class="field">
+          <span class="field__label mono">Your address</span>
+          <input class="field__input" id="reserveEmail" type="email" name="email" placeholder="name@house.com" autocomplete="email" required>
+          <i class="field__line"></i>
+        </label>
+        <button class="btn btn--ghost magnetic" type="submit" id="reserveSubmit">
+          <span class="btn__fill"></span>
+          <span class="btn__label">Request an audience</span>
+        </button>
+        <p class="reserve__note mono" id="reserveNote" aria-live="polite">No newsletter. One letter, when a piece is yours to claim.</p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer__clocks mono" id="clocks">
+    <div class="clock" data-tz="Europe/Zurich"><span class="clock__city">Genève</span><span class="clock__time">00:00:00</span></div>
+    <div class="clock" data-tz="America/New_York"><span class="clock__city">New York</span><span class="clock__time">00:00:00</span></div>
+    <div class="clock" data-tz="Asia/Tokyo"><span class="clock__city">Tokyo</span><span class="clock__time">00:00:00</span></div>
+    <div class="clock" data-tz="Asia/Dubai"><span class="clock__city">Dubai</span><span class="clock__time">00:00:00</span></div>
+  </div>
+  <div class="footer__grid">
+    <nav class="footer__col" aria-label="Footer">
+      <p class="mono footer__head">Maison</p>
+      <a href="#anatomy">Anatomy</a><a href="#collection">Collection</a><a href="#planetarium">Planetarium</a><a href="#atelier">Atelier</a>
+    </nav>
+    <div class="footer__col">
+      <p class="mono footer__head">Correspondence</p>
+      <a href="#reserve">Reserve</a><a href="#reserve">Press</a><a href="#reserve">Service</a>
+    </div>
+    <div class="footer__col footer__col--addr">
+      <p class="mono footer__head">Atelier</p>
+      <p>Rue du Rhône 13<br>1204 Genève<br>Switzerland</p>
+    </div>
+  </div>
+  <div class="footer__wordmark" aria-hidden="true"><span>Orrery</span></div>
+  <div class="footer__bottom mono">
+    <span>© MMXXVI Orrery SA</span>
+    <span>Orrery is a fictional maison, built as a demonstration of motion design.</span>
+    <a href="#top" class="footer__top" data-cursor="Up">Back to top</a>
+  </div>
+</footer>
+
+<script src="js/engine.js" defer></script>
+<script src="js/shader.js" defer></script>
+<script src="js/watch.js" defer></script>
+<script src="js/planetarium.js" defer></script>
+<script src="js/main.js" defer></script>
+</body>
+</html>
