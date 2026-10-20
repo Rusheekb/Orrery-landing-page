@@ -46,7 +46,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+html.is-loading, html.menu-open { overflow: hidden; }
 body.is-loading { overflow: hidden; }
+body.is-loading .nav { pointer-events: none; }
 body.has-cursor, body.has-cursor * { cursor: none !important; }
 body.menu-open { overflow: hidden; }
 
@@ -185,6 +187,8 @@ body.is-loading .nav { opacity: 0; transform: translateY(-12px); }
 .split-lines.is-in .w__i { transform: none; }
 .hero__title .c { transform: translateY(140%) rotate(8deg); transition: transform 1.4s var(--ease-out) calc(0.15s + var(--i, 0) * 70ms); transform-origin: 0 100%; }
 .hero__title.is-in .c { transform: none; transition-property: transform; }
+.hero__title.is-settled .c { transition: none; }
+.hero__title.is-settled .w { overflow: visible; }
 
 /* ---------- reveal ---------- */
 [data-reveal] { opacity: 0; transform: translateY(26px); transition: opacity 1s ease, transform 1.3s var(--ease-out); transition-delay: var(--d, 0s); }
@@ -316,8 +320,7 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
 .card:hover::after { opacity: 1; }
 .card__num { position: absolute; top: 1.6rem; left: 2rem; color: var(--gold); font-family: var(--font-display); font-style: italic; font-size: 1.3rem; letter-spacing: 0; text-transform: none; }
 .card__watch { width: 64%; margin: 2rem auto 0; perspective: 1200px; flex: 1 1 auto; display: grid; place-items: center; min-height: 0; }
-.card__watch .watch { width: 100%; height: auto; aspect-ratio: 1; max-height: 100%; transition: transform 0.9s var(--ease-out); filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.6)); }
-.card:hover .card__watch .watch { transform: scale(1.04); }
+.card__watch .watch { width: 100%; height: auto; aspect-ratio: 1; max-height: 100%; filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.6)); }
 .card__body { display: grid; gap: 0.45rem; margin-top: 1.5rem; position: relative; z-index: 1; }
 .card__name { font: 400 clamp(1.8rem, 2.6vw, 2.6rem)/1 var(--font-display); }
 .card__spec, .card__price { color: var(--mist); }

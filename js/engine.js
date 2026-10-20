@@ -55,6 +55,9 @@
   ORR.emit = (name, data) => { const l = listeners[name]; if (l) for (const fn of l.slice()) fn(data); };
 
   /* ---------- scroll engine (Lenis-style lerp on native scroll) ---------- */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if (!location.hash) window.scrollTo(0, 0);
+  if (document.body.classList.contains('is-loading')) doc.classList.add('is-loading');
   const scroll = (ORR.scroll = {
     y: window.scrollY, target: window.scrollY, max: 0,
     vel: 0, svel: 0, nvel: 0, dir: 1,
@@ -80,7 +83,8 @@
 
   ORR.scrollTo = (y, immediate) => {
     scroll.target = clamp(y, 0, scroll.max);
-    if (immediate || !scroll.smooth) { scroll.y = scroll.target; window.scrollTo(0, scroll.y); }
+    if (immediate) { scroll.y = scroll.target; window.scrollTo(0, scroll.y); }
+    else if (!scroll.smooth) { try { window.scrollTo({ top: scroll.target, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, scroll.target); } }
   };
   ORR.unlock = () => { scroll.lock = false; };
 
@@ -271,9 +275,10 @@
         rx = damp(rx, pointer.x, 16, dt); ry = damp(ry, pointer.y, 16, dt);
         const speed = Math.hypot(pointer.vx, pointer.vy);
         const k = hoverEl ? 0 : clamp(speed / 6000, 0, 0.35);
+        const press = pointer.down ? 0.82 : 1;
         const ang = Math.atan2(pointer.vy, pointer.vx) * 180 / Math.PI;
-        dot.style.transform = `translate3d(${pointer.x}px,${pointer.y}px,0)`;
-        ring.style.transform = `translate3d(${rx}px,${ry}px,0) rotate(${ang.toFixed(1)}deg) scale(${(1 + k).toFixed(3)}, ${(1 - k * 0.5).toFixed(3)})`;
+        dot.style.transform = `translate3d(${pointer.x}px,${pointer.y}px,0) scale(${pointer.down ? 1.6 : 1})`;
+        ring.style.transform = `translate3d(${rx}px,${ry}px,0) rotate(${ang.toFixed(1)}deg) scale(${((1 + k) * press).toFixed(3)}, ${((1 - k * 0.5) * press).toFixed(3)})`;
       });
     }
   }

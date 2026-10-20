@@ -79,27 +79,31 @@ void main(){
     try { gl = canvas.getContext('webgl', { antialias: false, alpha: false, depth: false, stencil: false, powerPreference: 'high-performance' }); } catch (e) { gl = null; }
     if (!gl) return null;
 
-    const compile = (type, src) => {
-      const sh = gl.createShader(type); gl.shaderSource(sh, src); gl.compileShader(sh);
-      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) { console.warn('shader', gl.getShaderInfoLog(sh)); return null; }
-      return sh;
-    };
-    const vs = compile(gl.VERTEX_SHADER, VS), fs = compile(gl.FRAGMENT_SHADER, FS);
-    if (!vs || !fs) return null;
-    const prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.warn('program', gl.getProgramInfoLog(prog)); return null; }
-    gl.useProgram(prog);
-    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    const U = {};
-    for (const n of ['u_res', 'u_time', 'u_mouse', 'u_scroll', 'u_intro', 'u_ripple']) U[n] = gl.getUniformLocation(prog, n);
+    let prog = null, buf = null; const U = {};
+    function init() {
+      const compile = (type, src) => {
+        const sh = gl.createShader(type); gl.shaderSource(sh, src); gl.compileShader(sh);
+        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) { console.warn('shader', gl.getShaderInfoLog(sh)); return null; }
+        return sh;
+      };
+      const vs = compile(gl.VERTEX_SHADER, VS), fs = compile(gl.FRAGMENT_SHADER, FS);
+      if (!vs || !fs) return false;
+      prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.warn('program', gl.getProgramInfoLog(prog)); return false; }
+      gl.useProgram(prog);
+      buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      for (const n of ['u_res', 'u_time', 'u_mouse', 'u_scroll', 'u_intro', 'u_ripple']) U[n] = gl.getUniformLocation(prog, n);
+      return true;
+    }
+    if (!init()) return null;
 
-    const state = { w: 1, h: 1, cw: 1, ch: 1, mx: 0, my: 0, tmx: 0, tmy: 0, scroll: 0, intro: 0, tintro: 1, visible: true, lost: false };
+    const state = { w: 1, h: 1, cw: 1, ch: 1, mx: 0, my: 0, tmx: 0, tmy: 0, scroll: 0, intro: 0, tintro: 0, visible: true, lost: false };
     const ripples = new Float32Array(16); let rippleIdx = 0;
 
     canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); state.lost = true; });
-    canvas.addEventListener('webglcontextrestored', () => { state.lost = false; });
+    canvas.addEventListener('webglcontextrestored', () => { if (init()) { resize(); state.lost = false; } else { canvas.style.display = 'none'; } });
 
     function resize() {
       const r = canvas.getBoundingClientRect();

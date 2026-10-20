@@ -67,6 +67,17 @@
   });
 
   /* =====================================================================
+     Section grounds (measured early: the loader needs them)
+     ===================================================================== */
+  const sections = $$('[data-bg]').map(el => ({ el, rgb: ORR.hexToRgb(el.dataset.bg), top: 0 }));
+  let bg = sections[0].rgb.slice();
+  function measureSections() { for (const s of sections) s.top = s.el.getBoundingClientRect().top + window.scrollY; }
+  measureSections(); ORR.on('resize', measureSections);
+  if (gl) ORR.on('resize', gl.resize);
+  const inertWhileLoading = [$('#nav'), $('#main'), $('.footer')].filter(Boolean);
+  for (const el of inertWhileLoading) { try { el.inert = true; } catch (e) { /* older engines */ } }
+
+  /* =====================================================================
      Loader
      ===================================================================== */
   const loader = $('#loader'), lCount = $('#loaderCount'), lStatus = $('#loaderStatus'), lArc = loader.querySelector('.loader__arc'), lPlanet = loader.querySelector('.loader__planet');
@@ -75,15 +86,17 @@
   const minWait = new Promise(r => setTimeout(r, reduced ? 0 : 2000));
   function finishLoader() {
     loader.classList.add('is-done');
-    document.body.classList.remove('is-loading');
-    ORR.unlock(); ORR.relayout(); measureSections();
+    document.body.classList.remove('is-loading'); document.documentElement.classList.remove('is-loading');
+    for (const el of inertWhileLoading) { try { el.inert = false; } catch (e) { /* ignore */ } }
+    ORR.unlock(); ORR.relayout(); measureSections(); measureTrack();
+    if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) ORR.scrollTo(t.getBoundingClientRect().top + window.scrollY, true); }
     heroTitle.classList.add('is-in');
     ORR.scramble($('#heroEyebrow'), null, 1200);
     setTimeout(() => { titleSettled = true; heroTitle.classList.add('is-settled'); }, reduced ? 0 : 2400);
     setTimeout(() => loader.classList.add('is-gone'), reduced ? 0 : 1300);
     if (gl) gl.setIntro(1);
   }
-  if (reduced) { finishLoader(); }
+  if (reduced) { setTimeout(finishLoader, 0); } // deferred so every const below is initialised first
   else {
     const start = performance.now(), dur = 1900; let mi = -1;
     (function step(now) {
@@ -112,16 +125,25 @@
   }
   tickClocks(); setInterval(tickClocks, 1000);
 
+  let navPrevY = SC.y, navDown = 0, navUp = 0, navHidden = false;
   ORR.onFrame(() => {
-    const hide = SC.y > 140 && SC.dir > 0 && Math.abs(SC.svel) > 60 && !document.body.classList.contains('menu-open');
-    nav.classList.toggle('is-hidden', hide);
+    const dy = SC.y - navPrevY; navPrevY = SC.y;
+    if (dy > 0) { navDown += dy; navUp = 0; } else if (dy < 0) { navUp -= dy; navDown = 0; }
+    if (SC.y < 140 || document.body.classList.contains('menu-open')) navHidden = false;
+    else if (navDown > 80) navHidden = true;
+    else if (navUp > 40) navHidden = false;
+    nav.classList.toggle('is-hidden', navHidden);
   });
   $$('[data-scramble]').forEach(a => { a.dataset.text = a.textContent; a.addEventListener('mouseenter', () => ORR.scramble(a, a.dataset.text, 600)); });
 
   const menu = $('#menu'), menuToggle = $('#menuToggle'), menuClose = $('#menuClose');
   function setMenu(open) {
+    if (open === menu.classList.contains('is-open')) return;
     menu.classList.toggle('is-open', open); menu.setAttribute('aria-hidden', String(!open));
-    menuToggle.setAttribute('aria-expanded', String(open)); document.body.classList.toggle('menu-open', open);
+    menuToggle.setAttribute('aria-expanded', String(open));
+    document.body.classList.toggle('menu-open', open); document.documentElement.classList.toggle('menu-open', open);
+    SC.lock = open;
+    if (open) setTimeout(() => menuClose.focus(), 350); else menuToggle.focus();
   }
   menuToggle.addEventListener('click', () => setMenu(!menu.classList.contains('is-open')));
   menuClose.addEventListener('click', () => setMenu(false));
@@ -160,10 +182,6 @@
   /* =====================================================================
      Ground colour lerp + progress bar
      ===================================================================== */
-  const sections = $$('[data-bg]').map(el => ({ el, rgb: ORR.hexToRgb(el.dataset.bg), top: 0 }));
-  let bg = sections[0].rgb.slice();
-  function measureSections() { for (const s of sections) s.top = s.el.getBoundingClientRect().top + window.scrollY; }
-  measureSections(); ORR.on('resize', measureSections);
   const progressBar = $('.progress i');
   ORR.onFrame(dt => {
     const y = SC.y + VP.h * 0.55; let active = sections[0];
@@ -200,10 +218,10 @@
     aList.forEach((li, k) => { li.classList.toggle('is-active', k === i); li.classList.toggle('is-past', k < i); });
   }
   setAnatomy(0);
-  let stageSize = 400; ORR.on('resize', () => { stageSize = stage.getBoundingClientRect().width || 400; });
+  let stageSize = 0; ORR.on('resize', () => { stageSize = stage.offsetWidth; });
   ORR.scrub($('#anatomy'), (p, s, dt) => {
-    if (!stageSize || stageSize === 400) stageSize = stage.getBoundingClientRect().width || 400;
-    const e = u.smoothstep(0.04, 0.5, p) * (1 - u.smoothstep(0.9, 1, p) * 0.25);
+    if (!stageSize) stageSize = stage.offsetWidth || 400;
+    const e = u.smoothstep(0.04, 0.5, p) * (1 - u.smoothstep(0.86, 1, p));
     const mobile = isMobile();
     const tiltX = touch ? 0 : -P.sny * 5, tiltY = touch ? 0 : P.snx * 6;
     const tilt = mobile ? 52 : 58, shrink = mobile ? 0.3 : 0.22;
@@ -240,11 +258,12 @@
       let tx = 0, ty = 0;
       if (card.__hover && !touch) { const r = card.getBoundingClientRect(); tx = ((P.y - r.top) / r.height - 0.5) * -18; ty = ((P.x - r.left) / r.width - 0.5) * 22; }
       card.__rx = u.damp(card.__rx, tx, 8, dt); card.__ry = u.damp(card.__ry, ty, 8, dt);
-      if (Math.abs(card.__rx) > 0.01 || Math.abs(card.__ry) > 0.01) card.__w.style.transform = `rotateX(${card.__rx.toFixed(2)}deg) rotateY(${card.__ry.toFixed(2)}deg) scale(${card.__hover ? 1.04 : 1})`;
+      card.__s = u.damp(card.__s || 1, card.__hover && !touch ? 1.045 : 1, 6, dt);
+      if (Math.abs(card.__rx) > 0.01 || Math.abs(card.__ry) > 0.01 || Math.abs(card.__s - 1) > 0.001) card.__w.style.transform = `rotateX(${card.__rx.toFixed(2)}deg) rotateY(${card.__ry.toFixed(2)}deg) scale(${card.__s.toFixed(4)})`;
     }
   });
   let trackMax = 0;
-  function measureTrack() { trackMax = Math.max(0, track.scrollWidth - VP.w); }
+  function measureTrack() { const pr = parseFloat(getComputedStyle(track).paddingRight) || 0; trackMax = Math.max(0, track.scrollWidth + pr - VP.w); }
   ORR.on('resize', measureTrack); setTimeout(measureTrack, 50);
   ORR.scrub($('#collection'), (p) => {
     if (isMobile()) { track.style.transform = ''; return; }
@@ -318,10 +337,13 @@
      Marquee
      ===================================================================== */
   (function initMarquee() {
-    const mq = $('#marquee'), tr = $('#marqueeTrack'); const base = tr.innerHTML;
-    let copies = 1; while (tr.scrollWidth < VP.w * 2.2 && copies < 8) { tr.insertAdjacentHTML('beforeend', base); copies++; }
-    let unit = tr.scrollWidth / copies, x = 0, visible = false;
-    ORR.on('resize', () => { unit = tr.scrollWidth / copies; });
+    const mq = $('#marquee'), tr = $('#marqueeTrack'); const base = tr.innerHTML; const perCopy = tr.children.length;
+    let copies = 1, unit = 0, x = 0, visible = false;
+    function fill() {
+      while ((copies < 2 || tr.scrollWidth < VP.w * 2.2) && copies < 10) { tr.insertAdjacentHTML('beforeend', base); copies++; }
+      unit = tr.children[perCopy].offsetLeft - tr.children[0].offsetLeft; // one full period including the gap
+    }
+    fill(); ORR.on('resize', fill);
     new IntersectionObserver(en => { visible = en[0].isIntersecting; }, { threshold: 0 }).observe(mq);
     ORR.onFrame(dt => {
       if (!visible || reduced) return;
@@ -354,7 +376,6 @@
      Magnetic + init
      ===================================================================== */
   ORR.magnetize($$('.magnetic'));
-  if (location.hash && document.getElementById(location.hash.slice(1))) setTimeout(() => { const t = document.getElementById(location.hash.slice(1)); ORR.scrollTo(t.getBoundingClientRect().top + window.scrollY, true); }, reduced ? 50 : 2600);
   window.addEventListener('load', () => { ORR.relayout(); measureSections(); measureTrack(); });
   const pageTitle = document.title;
   document.addEventListener('visibilitychange', () => { document.title = document.hidden ? 'Still keeping time — Orrery' : pageTitle; });
