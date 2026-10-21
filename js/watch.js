@@ -153,8 +153,8 @@ ${orbits.map(r => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${
 <g class="hand-h" transform="rotate(0 ${C} ${C})"><polygon points="${C},296 ${C + 16},${C} ${C},${C + 34} ${C - 16},${C}" fill="url(#${u}-hand)"/><polygon points="${C},296 ${C},${C + 34} ${C - 16},${C}" fill="${v.hands[1]}" opacity=".55"/></g>
 <g class="hand-m" transform="rotate(0 ${C} ${C})"><polygon points="${C},176 ${C + 13},${C} ${C},${C + 40} ${C - 13},${C}" fill="url(#${u}-hand)"/><polygon points="${C},176 ${C},${C + 40} ${C - 13},${C}" fill="${v.hands[1]}" opacity=".55"/></g>
 <g class="hand-s" transform="rotate(0 ${C} ${C})"><line x1="${C}" y1="${C + 70}" x2="${C}" y2="150" stroke="${v.seconds}" stroke-width="2.4"/><circle cx="${C}" cy="${C + 58}" r="9" fill="${v.seconds}"/></g>
-<circle cx="${C}" cy="${C}" r="15" fill="url(#${u}-metal3)"/>
-<circle cx="${C}" cy="${C}" r="5" fill="#0a0a0c"/>
+<circle class="cap" cx="${C}" cy="${C}" r="15" fill="url(#${u}-metal3)"/>
+<circle class="cap" cx="${C}" cy="${C}" r="5" fill="#0a0a0c"/>
 </g>`;
 
   L.crystal = (u, v) => `<g class="l-crystal">
@@ -200,16 +200,42 @@ ${[[300, 250, 20], [550, 250, 70], [170, 560, 110], [370, 760, 40], [780, 540, 9
     const svg = t.content.firstElementChild; svg.setAttribute('class', cls); svg.setAttribute('aria-hidden', 'true'); return svg;
   }
 
-  /* Assembled watch: returns an <svg> */
+  /* Assembled watch: returns a <div class="watch"> holding a static base svg and a
+     transparent live overlay (hands, planets, glare) so per-frame updates never
+     re-rasterise the dial, guilloche and metal. */
   ORR.makeWatch = (variantKey, cls) => {
     const v = VARIANTS[variantKey] || VARIANTS.perihelion; const u = 'w' + (uid++);
     const body = ORDER_ASSEMBLED.map(n => L[n](u, v)).join('');
-    return svgEl(`<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" data-variant="${variantKey}">${defs(u, v)}${body}</svg>`, 'watch ' + (cls || ''));
+    const base = svgEl(`<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" data-variant="${variantKey}">${defs(u, v)}<defs><clipPath id="${u}-win"><circle cx="${C}" cy="655" r="112"/></clipPath></defs>${body}</svg>`, 'watch__base');
+    const live = svgEl(`<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"><g class="live-planets" clip-path="url(#${u}-win)"></g><g class="live-hands"></g></svg>`, 'watch__live');
+    const pg = live.querySelector('.live-planets'), hg = live.querySelector('.live-hands');
+    base.querySelectorAll('.gear').forEach(el => el.remove()); // fully occluded by the dial
+    base.querySelectorAll('.planet').forEach(el => pg.appendChild(el));
+    base.querySelectorAll('.hand-h, .hand-m, .hand-s, .cap').forEach(el => hg.appendChild(el));
+    const glare = base.querySelector('.glare'); if (glare) live.appendChild(glare);
+    const wrap = document.createElement('div');
+    wrap.className = 'watch ' + (cls || ''); wrap.setAttribute('aria-hidden', 'true'); wrap.dataset.variant = variantKey;
+    wrap.appendChild(base); wrap.appendChild(live);
+    return wrap;
   };
-  /* Single layer: returns an <svg> */
+  /* Single layer: returns an <svg>, or for the layers with moving parts a
+     <div> holding a static plate svg and a live overlay svg (everything from
+     the first moving part onward keeps its paint order in the overlay). */
   ORR.makeLayer = (variantKey, layer, cls) => {
     const v = VARIANTS[variantKey] || VARIANTS.perihelion; const u = 'l' + (uid++);
-    return svgEl(`<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" data-layer="${layer}">${defs(u, v)}${L[layer](u, v)}</svg>`, 'watch layer ' + (cls || ''));
+    const svg = svgEl(`<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" data-layer="${layer}">${defs(u, v)}${L[layer](u, v)}</svg>`, 'watch layer ' + (cls || ''));
+    if (layer !== 'module' && layer !== 'movement') return svg;
+    const group = svg.querySelector('g'); const kids = Array.from(group.children);
+    const first = kids.findIndex(el => el.matches('.gear, .planet, .balance, .rotor'));
+    if (first < 0) return svg;
+    const live = svgEl(`<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"><g class="live"></g></svg>`, 'watch__live');
+    const lg = live.querySelector('.live');
+    for (const el of kids.slice(first)) lg.appendChild(el);
+    svg.setAttribute('class', 'watch__base');
+    const wrap = document.createElement('div');
+    wrap.className = 'watch layer ' + (cls || ''); wrap.setAttribute('aria-hidden', 'true'); wrap.dataset.layer = layer;
+    wrap.appendChild(svg); wrap.appendChild(live);
+    return wrap;
   };
 
   /* ---- animation: hands, planets, gears, balance, rotor ---- */

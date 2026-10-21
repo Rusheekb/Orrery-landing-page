@@ -24,7 +24,7 @@
 
     function resize() {
       const r = canvas.getBoundingClientRect();
-      S.dpr = Math.min(window.devicePixelRatio || 1, 2);
+      S.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       S.w = Math.max(1, r.width); S.h = Math.max(1, r.height);
       canvas.width = Math.round(S.w * S.dpr); canvas.height = Math.round(S.h * S.dpr);
       trail.width = canvas.width; trail.height = canvas.height;

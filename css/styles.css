@@ -91,8 +91,9 @@ em { font-style: italic; font-weight: 400; color: var(--accent); }
   position: fixed; inset: -50%; width: 200%; height: 200%;
   pointer-events: none; z-index: 9000; opacity: 0.07;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.055;
   animation: grain 1.2s steps(6) infinite;
-  mix-blend-mode: overlay;
+  will-change: transform;
 }
 @keyframes grain {
   0% { transform: translate(0, 0); } 17% { transform: translate(-4%, -7%); }
@@ -238,7 +239,11 @@ body.is-loading .nav { opacity: 0; transform: translateY(-12px); }
   transition: opacity 0.8s ease 0.35s, clip-path 1.8s var(--ease-inout) 0.35s;
 }
 body:not(.is-loading) .hero__watch { opacity: 1; clip-path: circle(75% at 50% 50%); }
-.hero__watch .watch { width: 100%; height: 100%; will-change: transform; filter: drop-shadow(0 60px 80px rgba(0, 0, 0, 0.7)); }
+.watch { position: relative; }
+.watch > svg { display: block; width: 100%; height: 100%; }
+.watch > .watch__live { position: absolute; inset: 0; }
+.hero__watch::before { content: ""; position: absolute; left: 6%; right: 6%; top: 16%; bottom: -8%; border-radius: 50%; background: radial-gradient(ellipse at 50% 55%, rgba(0, 0, 0, 0.75) 30%, rgba(0, 0, 0, 0) 70%); z-index: -1; pointer-events: none; }
+.hero__watch .watch { width: 100%; height: 100%; will-change: transform; }
 .hero__title {
   position: relative; z-index: 2; margin-top: auto;
   font: 600 clamp(5.4rem, 18.5vw, 23rem)/0.82 var(--font-display);
@@ -282,6 +287,7 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
 .anatomy__stage-wrap { position: relative; display: grid; place-items: center; height: 100%; padding-top: 9rem; perspective: 1800px; perspective-origin: 50% 45%; }
 .anatomy__stage { position: relative; width: min(52vh, 40vw); aspect-ratio: 1; transform-style: preserve-3d; will-change: transform; }
 .anatomy__stage .layer { position: absolute; inset: 0; width: 100%; height: 100%; transform-style: preserve-3d; will-change: transform; overflow: visible; }
+.anatomy__stage .layer > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .anatomy__panel { position: relative; z-index: 2; display: grid; gap: 1.2rem; align-content: center; max-width: 26rem; justify-self: end; }
 .anatomy__index { color: var(--mist); }
 .anatomy__index span { color: var(--gold); font-size: 1.1rem; }
@@ -322,8 +328,9 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
 .card::after { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 50% at 50% 40%, rgba(201, 164, 92, 0.16), transparent 70%); opacity: 0; transition: opacity 0.8s; pointer-events: none; }
 .card:hover::after { opacity: 1; }
 .card__num { position: absolute; top: 1.6rem; left: 2rem; color: var(--gold); font-family: var(--font-display); font-style: italic; font-size: 1.3rem; letter-spacing: 0; text-transform: none; }
-.card__watch { width: 64%; margin: 2rem auto 0; perspective: 1200px; flex: 1 1 auto; display: grid; place-items: center; min-height: 0; }
-.card__watch .watch { width: 100%; height: auto; aspect-ratio: 1; max-height: 100%; filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.6)); }
+.card__watch { position: relative; width: 64%; margin: 2rem auto 0; perspective: 1200px; flex: 1 1 auto; display: grid; place-items: center; min-height: 0; }
+.card__watch::before { content: ""; position: absolute; left: 4%; right: 4%; top: 14%; bottom: -10%; border-radius: 50%; background: radial-gradient(ellipse at 50% 55%, rgba(0, 0, 0, 0.7) 30%, rgba(0, 0, 0, 0) 70%); z-index: -1; pointer-events: none; }
+.card__watch .watch { width: 100%; height: auto; aspect-ratio: 1; max-height: 100%; will-change: transform; }
 .card__body { display: grid; gap: 0.45rem; margin-top: 1.5rem; position: relative; z-index: 1; }
 .card__name { font: 400 clamp(1.8rem, 2.6vw, 2.6rem)/1 var(--font-display); }
 .card__spec, .card__price { color: var(--mist); }

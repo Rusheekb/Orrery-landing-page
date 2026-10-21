@@ -207,7 +207,9 @@
     { name: 'Caseback', desc: 'Sapphire exhibition back. Numbered 001 to 009 and engraved by hand in the Vallée de Joux.' },
   ];
   const stage = $('#anatomyStage');
-  const layers = ORR.WATCH_LAYERS.map((name, i) => { const svg = ORR.makeLayer('perihelion', name); stage.appendChild(svg); if (name === 'hands' || name === 'module' || name === 'movement') ORR.animateWatch(svg); return { name, svg, i }; });
+  const layers = ORR.WATCH_LAYERS.map((name, i) => { const svg = ORR.makeLayer('perihelion', name); if (name === 'hands' || name === 'module' || name === 'movement') ORR.animateWatch(svg); return { name, svg, i }; });
+  // appended back-to-front so that at rest (every layer at z = 0) the crystal paints on top
+  for (const L of layers.slice().reverse()) stage.appendChild(L.svg);
   const aIndex = $('#anatomyIndex'), aName = $('#anatomyName'), aDesc = $('#anatomyDesc'), aLine = $('#anatomyLine'), aList = $$('#anatomyList li'), aHint = $('.anatomy__hint');
   let aCur = -1;
   function setAnatomy(i) {
@@ -267,13 +269,17 @@
   let trackMax = 0;
   function measureTrack() { const pr = parseFloat(getComputedStyle(track).paddingRight) || 0; trackMax = Math.max(0, track.scrollWidth + pr - VP.w); }
   ORR.on('resize', measureTrack); setTimeout(measureTrack, 50);
+  const cardInners = cards.map(c => c.querySelector('.card__watch'));
+  let lastTrack = '', lastDrift = '';
   ORR.scrub($('#collection'), (p) => {
-    if (isMobile()) { track.style.transform = ''; return; }
+    if (isMobile()) { if (lastTrack) { track.style.transform = ''; lastTrack = ''; } return; }
     if (!trackMax) measureTrack();
     const x = -trackMax * u.clamp((p - 0.05) / 0.92, 0, 1);
     const skew = reduced ? 0 : -SC.nvel * 7;
-    track.style.transform = `translate3d(${x.toFixed(1)}px,0,0) skewX(${skew.toFixed(2)}deg)`;
-    for (let i = 0; i < cards.length; i++) { const inner = cards[i].querySelector('.card__watch'); inner.style.transform = reduced ? '' : `translate3d(${(SC.nvel * -26).toFixed(1)}px,0,0)`; }
+    const t = `translate3d(${x.toFixed(1)}px,0,0) skewX(${skew.toFixed(2)}deg)`;
+    if (t !== lastTrack) { track.style.transform = t; lastTrack = t; }
+    const drift = reduced ? '' : `translate3d(${(SC.nvel * -26).toFixed(1)}px,0,0)`;
+    if (drift !== lastDrift) { lastDrift = drift; for (const inner of cardInners) inner.style.transform = drift; }
   }, { pin: true, always: true });
 
   /* =====================================================================
@@ -297,7 +303,7 @@
   (function initGuilloche() {
     const canvas = $('#guillocheCanvas'); const ctx = canvas.getContext('2d');
     let w = 1, h = 1, dpr = 1, visible = false, phase = 0, mx = -1e4, my = -1e4, press = 0;
-    function resize() { const r = canvas.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio || 1, 2); w = Math.max(1, r.width); h = Math.max(1, r.height); canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+    function resize() { const r = canvas.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio || 1, 1.5); w = Math.max(1, r.width); h = Math.max(1, r.height); canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
     resize(); ORR.on('resize', resize);
     new IntersectionObserver(en => { visible = en[0].isIntersecting; }, { threshold: 0 }).observe(canvas);
     ORR.onFrame((dt, t) => {
@@ -360,10 +366,13 @@
      Reserve: glow + form
      ===================================================================== */
   const reserve = $('#reserve'), form = $('#reserveForm'), email = $('#reserveEmail'), note = $('#reserveNote'), submit = $('#reserveSubmit');
+  let glowX = -1, glowY = -1;
   ORR.onFrame(() => {
     const r = reserve.getBoundingClientRect(); if (r.bottom < 0 || r.top > VP.h) return;
-    reserve.style.setProperty('--mx', ((P.sx - r.left) / r.width * 100).toFixed(2) + '%');
-    reserve.style.setProperty('--my', ((P.sy - r.top) / r.height * 100).toFixed(2) + '%');
+    const mx = (P.sx - r.left) / r.width * 100, my = (P.sy - r.top) / r.height * 100;
+    if (Math.abs(mx - glowX) < 0.08 && Math.abs(my - glowY) < 0.08) return;
+    glowX = mx; glowY = my;
+    reserve.style.setProperty('--mx', mx.toFixed(2) + '%'); reserve.style.setProperty('--my', my.toFixed(2) + '%');
   });
   form.addEventListener('submit', e => {
     e.preventDefault();
