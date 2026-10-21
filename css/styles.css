@@ -74,6 +74,9 @@ em { font-style: italic; font-weight: 400; color: var(--accent); }
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
 }
+.sym { font-style: normal; text-transform: none; }
+.touch-only { display: none; }
+@media (hover: none), (pointer: coarse) { .pointer-only { display: none; } .touch-only { display: inline; } }
 .section-label {
   display: inline-flex;
   align-items: center;
@@ -298,7 +301,7 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
 /* ==========================================================================
    COLLECTION (pinned horizontal, bone ground)
    ========================================================================== */
-.collection { position: relative; height: 460vh; color: var(--ink); --accent: var(--gold-deep); --mist: rgba(10, 9, 8, 0.6); --faint: rgba(10, 9, 8, 0.16); }
+.collection { position: relative; height: 460vh; background: var(--bone); color: var(--ink); --accent: var(--gold-deep); --mist: rgba(10, 9, 8, 0.6); --faint: rgba(10, 9, 8, 0.16); }
 .collection__pin { position: sticky; top: 0; height: var(--vh); overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
 .collection__head { position: absolute; top: 6rem; left: var(--gutter); right: var(--gutter); z-index: 2; display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; pointer-events: none; }
 .collection__head > * { pointer-events: auto; }
@@ -331,11 +334,12 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
 .card--end { background: transparent; color: var(--ink); justify-content: center; gap: 2rem; width: min(30vw, 420px); --mist: rgba(10, 9, 8, 0.6); }
 .card--end .card__end-text { font: 400 clamp(1.4rem, 2vw, 2rem)/1.3 var(--font-display); }
 .card--end .mono { font-size: 0.8em; color: var(--gold-deep); }
+.card--end .btn { align-self: flex-start; }
 
 /* ==========================================================================
    PLANETARIUM
    ========================================================================== */
-.planetarium { position: relative; min-height: var(--vh); display: grid; align-items: center; overflow: hidden; isolation: isolate; }
+.planetarium { position: relative; min-height: var(--vh); display: grid; align-items: center; overflow: hidden; isolation: isolate; background: #0a0912; }
 .planetarium__canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
 .planetarium__inner { position: relative; z-index: 1; padding: 8rem var(--gutter); display: grid; grid-template-columns: minmax(0, 34rem) 1fr; gap: 3rem; pointer-events: none; }
 .planetarium__copy { display: grid; gap: 1.6rem; pointer-events: none; }
@@ -405,7 +409,7 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
 .footer__col--addr p { line-height: 1.6; }
 .footer__wordmark { overflow: hidden; line-height: 0.78; margin: 2rem 0 1.5rem; }
 .footer__wordmark span {
-  display: block; font: 600 clamp(5rem, 21.5vw, 29rem)/0.78 var(--font-display); font-variation-settings: "opsz" 96;
+  display: block; font: 600 clamp(3.4rem, 21.5vw, 29rem)/0.78 var(--font-display); font-variation-settings: "opsz" 96;
   text-transform: uppercase; letter-spacing: -0.02em; text-align: center;
   color: transparent; -webkit-text-stroke: 1px rgba(236, 230, 218, 0.38);
   transition: color 0.8s var(--ease-out), -webkit-text-stroke-color 0.8s;
@@ -450,7 +454,7 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
   .anatomy__stage { width: min(38vh, 64vw); margin: 0 auto; }
   .anatomy__panel { justify-self: start; max-width: none; gap: 0.6rem; }
   .anatomy__list, .anatomy__hint { display: none; }
-  .anatomy__desc { min-height: 0; font-size: 0.92rem; }
+  .anatomy__desc { min-height: 4.8em; font-size: 0.92rem; }
   .anatomy__name { font-size: clamp(1.5rem, 6vw, 2.4rem); }
   .collection { height: auto; }
   .collection__pin { position: static; height: auto; overflow: visible; padding: 8rem 0 6rem; }
@@ -458,7 +462,7 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
   .collection__hint { display: none; }
   .collection__track { flex-direction: column; align-items: stretch; gap: 1.5rem; margin-top: 3rem; transform: none !important; }
   .card { width: 100%; height: auto; min-height: 0; }
-  .card__watch { width: 62%; margin-top: 2.5rem; }
+  .card__watch { width: min(62%, 70vh); margin-top: 2.5rem; }
   .card--end { width: 100%; padding: 2rem 0; }
   .planetarium { min-height: 0; }
   .planetarium__inner { grid-template-columns: 1fr; padding: 7rem var(--gutter) 64vh; }
@@ -468,6 +472,7 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
   .stats { grid-template-columns: repeat(2, 1fr); }
   .stats__item { border-right: 0; border-bottom: 1px solid var(--faint); padding: 1.6rem 0; }
   .stats__item:nth-child(odd) { border-right: 1px solid var(--faint); padding-right: 1.2rem; }
+  .stats__item:last-child:nth-child(odd) { grid-column: 1 / -1; border-right: 0; padding-right: 0; }
   .stats__item:nth-child(even) { padding-left: 1.2rem; }
   .stats__item:last-child { border-bottom: 0; }
   .reserve__form { grid-template-columns: 1fr; }
@@ -476,9 +481,36 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
   .clock:nth-child(-n+2) { border-bottom: 1px solid var(--faint); }
   .footer__grid { grid-template-columns: 1fr 1fr; }
   .footer__col--addr { grid-column: 1 / -1; }
+  /* tap targets: 44px hit areas without moving anything optically */
+  .nav__menu, .menu__close, .nav__sound { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 0.6rem; margin: -0.6rem; }
+  .nav__sound-bars { height: 14px; }
+  .card__cta { padding: 0.8rem 0.25rem; margin: -0.4rem -0.25rem 0; }
+  .card__cta::after { bottom: 0.5rem; }
+  .footer__col { gap: 0.15rem; }
+  .footer__col a, .footer__top { padding-block: 0.5rem; }
+}
+/* short landscape phones */
+@media (max-width: 900px) and (max-height: 560px) {
+  .anatomy__pin { grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.9fr); grid-template-rows: auto 1fr; column-gap: 1.5rem; padding-top: 3.8rem; padding-bottom: 0.8rem; }
+  .anatomy__head { grid-column: 1 / -1; gap: 0.3rem; }
+  .anatomy__title { font-size: clamp(1.3rem, 5vh, 2rem); }
+  .anatomy__stage-wrap { padding-top: 0; }
+  .anatomy__stage { width: min(48vh, 34vw); }
+  .anatomy__panel { align-self: center; gap: 0.4rem; }
+  .anatomy__name { font-size: clamp(1.2rem, 5vh, 1.8rem); }
+  .anatomy__desc { min-height: 0; font-size: 0.8rem; line-height: 1.45; }
+  .card { flex-direction: row; align-items: center; gap: 1.5rem; }
+  .card__watch { width: min(40%, 62vh); margin: 0; flex: 0 0 auto; }
+  .card__body { margin-top: 0; }
+}
+@media (max-height: 520px) {
+  .menu { justify-content: flex-start; padding-top: 4.5rem; overflow-y: auto; }
+  .menu__links a { font-size: clamp(1.5rem, 11vh, 4.5rem); line-height: 1.05; }
+  .menu__foot { position: static; margin-top: 1.5rem; }
 }
 @media (max-width: 640px) {
   .hero__title { font-size: clamp(4.2rem, 19vw, 7rem); }
+  .stats__item dt, .planetarium__stats dt, .planetarium__hud, .atelier__caption, .reserve__note, .footer__bottom { font-size: 0.76rem; letter-spacing: 0.12em; }
   .nav { padding: 1.1rem var(--gutter); }
   .nav__time { display: none; }
   .manifesto { padding: 20vh var(--gutter); }
@@ -495,7 +527,7 @@ body:not(.is-loading) .hero__sub, body:not(.is-loading) .hero__ctas { opacity: 1
 
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; scroll-behavior: auto !important; }
+  *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
   .grain { animation: none; }
   [data-reveal], .split-lines .w__i, .hero__title .c, .hero__sub, .hero__ctas, .footer__wordmark span { opacity: 1 !important; transform: none !important; }
   .hero__watch { opacity: 1 !important; clip-path: none !important; }

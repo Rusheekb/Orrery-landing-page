@@ -44,6 +44,13 @@
     pointer.nx = (e.clientX / vp.w) * 2 - 1; pointer.ny = (e.clientY / vp.h) * 2 - 1;
   }, { passive: true });
   window.addEventListener('pointerdown', e => { pointer.down = true; ORR.emit('pointerdown', e); }, { passive: true });
+  // touch: a finger counts as a live pointer only while it is on the glass
+  const setTouch = t => { pointer.x = t.clientX; pointer.y = t.clientY; pointer.nx = (t.clientX / vp.w) * 2 - 1; pointer.ny = (t.clientY / vp.h) * 2 - 1; };
+  window.addEventListener('touchstart', e => { if (e.touches[0]) { pointer.touchActive = true; setTouch(e.touches[0]); } }, { passive: true });
+  window.addEventListener('touchmove', e => { if (e.touches[0]) setTouch(e.touches[0]); }, { passive: true });
+  window.addEventListener('touchend', e => { if (!e.touches.length) pointer.touchActive = false; }, { passive: true });
+  window.addEventListener('touchcancel', () => { pointer.touchActive = false; }, { passive: true });
+  ORR.pointerLive = () => (touch ? !!pointer.touchActive : (pointer.active && pointer.inside));
   window.addEventListener('pointerup', () => { pointer.down = false; }, { passive: true });
   document.addEventListener('mouseleave', () => { pointer.inside = false; });
   document.addEventListener('mouseenter', () => { pointer.inside = true; });

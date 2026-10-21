@@ -41,8 +41,9 @@
   const heroChars = Array.from(heroTitle.querySelectorAll('.c'));
   let titleSettled = false;
 
+  let heroOver = 0; const measureHero = () => { heroOver = Math.max(0, hero.offsetHeight - VP.h); }; measureHero(); ORR.on('resize', measureHero);
   ORR.onFrame((dt, t) => {
-    const hp = u.clamp(SC.y / VP.h, 0, 1);
+    const hp = u.clamp((SC.y - heroOver) / VP.h, 0, 1); // fade starts once the hero's own bottom has reached the viewport
     if (gl) { gl.setScroll(hp); gl.render(dt); }
     if (!heroVisible) return;
     if (!reduced) {
@@ -184,10 +185,11 @@
      ===================================================================== */
   const progressBar = $('.progress i');
   ORR.onFrame(dt => {
-    const y = SC.y + VP.h * 0.55; let active = sections[0];
+    const y = SC.y + VP.h * 0.6; let active = sections[0];
     for (const s of sections) if (s.top <= y) active = s;
     const T = active.rgb;
-    bg[0] = u.damp(bg[0], T[0], 4, dt); bg[1] = u.damp(bg[1], T[1], 4, dt); bg[2] = u.damp(bg[2], T[2], 4, dt);
+    if (reduced) { bg[0] = T[0]; bg[1] = T[1]; bg[2] = T[2]; }
+    else { bg[0] = u.damp(bg[0], T[0], 5, dt); bg[1] = u.damp(bg[1], T[1], 5, dt); bg[2] = u.damp(bg[2], T[2], 5, dt); }
     document.body.style.backgroundColor = `rgb(${bg[0].toFixed(1)},${bg[1].toFixed(1)},${bg[2].toFixed(1)})`;
     progressBar.style.transform = `scaleX(${SC.max ? (SC.y / SC.max).toFixed(4) : 0})`;
   });
@@ -301,7 +303,7 @@
     ORR.onFrame((dt, t) => {
       if (!visible || document.hidden) return;
       const r = canvas.getBoundingClientRect();
-      const inside = P.inside && P.x >= r.left && P.x <= r.right && P.y >= r.top && P.y <= r.bottom;
+      const inside = ORR.pointerLive() && P.x >= r.left && P.x <= r.right && P.y >= r.top && P.y <= r.bottom;
       const tx = inside ? P.x - r.left : w / 2, ty = inside ? P.y - r.top : h / 2;
       mx = mx < -5e3 ? tx : u.damp(mx, tx, 8, dt); my = my < -5e3 ? ty : u.damp(my, ty, 8, dt);
       press = u.damp(press, inside ? 1 : 0, 4, dt);

@@ -30,9 +30,11 @@
       trail.width = canvas.width; trail.height = canvas.height;
       ctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0); tctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
       const mobile = S.w <= 900;
+      const inner = canvas.parentElement && canvas.parentElement.querySelector('.planetarium__inner');
+      const band = mobile ? ((inner && parseFloat(getComputedStyle(inner).paddingBottom)) || S.h * 0.5) : 0; // the strip reserved for the orrery under the copy
       S.cx = mobile ? S.w * 0.5 : S.w * 0.64;
-      S.cy = mobile ? S.h - Math.min(S.h * 0.27, 320) : S.h * 0.52;
-      S.R = mobile ? Math.min(S.w * 0.44, S.h * 0.2) : Math.min(S.w * 0.3, S.h * 0.42);
+      S.cy = mobile ? S.h - band * 0.5 : S.h * 0.52;
+      S.R = mobile ? Math.min(S.w * 0.44, band * 0.4) : Math.min(S.w * 0.3, S.h * 0.42);
     }
     resize();
 
@@ -50,7 +52,7 @@
     function render(dt) {
       if (!S.visible || document.hidden) return;
       const P = ORR.pointer; const rect = canvas.getBoundingClientRect();
-      const inside = P.inside && P.x >= rect.left && P.x <= rect.right && P.y >= rect.top && P.y <= rect.bottom;
+      const inside = ORR.pointerLive() && P.x >= rect.left && P.x <= rect.right && P.y >= rect.top && P.y <= rect.bottom;
       S.tmx = inside ? P.x - rect.left : -1e4; S.tmy = inside ? P.y - rect.top : -1e4;
       if (S.tmx < -5e3) { S.mx = u.damp(S.mx, S.tmx, 2.5, dt); S.my = u.damp(S.my, S.tmy, 2.5, dt); }
       else if (S.mx < -5e3) { S.mx = S.tmx; S.my = S.tmy; }
