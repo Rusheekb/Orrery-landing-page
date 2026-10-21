@@ -176,7 +176,7 @@
   // Sound: a synthesised escapement tick, opt-in
   const soundBtn = $('#soundToggle'); let audio = null, soundOn = false, lastTickSec = -1;
   function tick(strong) {
-    if (!audio) return;
+    if (!audio || audio.state !== 'running') return;
     const t = audio.currentTime;
     const o = audio.createOscillator(), g = audio.createGain(), f = audio.createBiquadFilter();
     o.type = 'square'; o.frequency.setValueAtTime(strong ? 3200 : 2600, t);
@@ -188,6 +188,9 @@
     soundOn = !soundOn; soundBtn.setAttribute('aria-pressed', String(soundOn));
     if (soundOn) { try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) { soundOn = false; soundBtn.setAttribute('aria-pressed', 'false'); } }
   });
+  const resumeAudio = () => { if (soundOn && audio && audio.state !== 'running') audio.resume().catch(() => {}); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) resumeAudio(); });
+  window.addEventListener('pageshow', resumeAudio);
   ORR.onFrame(() => {
     if (!soundOn || !audio) return;
     const s = Math.floor(Date.now() / 1000);

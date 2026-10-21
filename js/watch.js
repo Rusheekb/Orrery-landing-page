@@ -245,7 +245,7 @@ ${disc('cotes', u, 378)}
 <path data-cx="300" data-cy="720" d="${gearPath(300, 720, 40, 12, 8, 0)}" fill-rule="evenodd" fill="url(#${u}-metal3)" class="gear" data-rate="-3.05"/>
 <g class="balance" transform="rotate(0 668 660)">
   <circle cx="668" cy="660" r="78" fill="none" stroke="url(#${u}-metal3)" stroke-width="12"/>
-  <g stroke="url(#${u}-metal3)" stroke-width="6"><line x1="668" y1="660" x2="668" y2="584"/><line x1="668" y1="660" x2="${f1(668 + 76 * Math.cos(2.094))}" y2="${f1(660 + 76 * Math.sin(2.094))}"/><line x1="668" y1="660" x2="${f1(668 + 76 * Math.cos(4.189))}" y2="${f1(660 + 76 * Math.sin(4.189))}"/></g>
+  <g stroke="${v.metal[1]}" stroke-width="6"><line x1="668" y1="660" x2="668" y2="584"/><line x1="668" y1="660" x2="${f1(668 + 76 * Math.cos(2.094))}" y2="${f1(660 + 76 * Math.sin(2.094))}"/><line x1="668" y1="660" x2="${f1(668 + 76 * Math.cos(4.189))}" y2="${f1(660 + 76 * Math.sin(4.189))}"/></g>
   <path d="${spiralPath(668, 660, 6, 60, 4.5)}" fill="none" stroke="#9fb6d6" stroke-width="1.1" opacity=".9"/>
   <circle cx="668" cy="660" r="9" fill="url(#${u}-ruby)"/>
 </g>

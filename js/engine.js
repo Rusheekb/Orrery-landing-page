@@ -165,10 +165,12 @@
   /* ---------- resize / relayout ---------- */
   let resizeT = 0;
   function relayout() {
-    vp.w = window.innerWidth; vp.h = window.innerHeight;
+    const w = window.innerWidth, h = window.innerHeight;
+    const toolbarOnly = touch && w === vp.w && Math.abs(h - vp.h) < vp.h * 0.25; // a phone's URL bar collapsing is not a real resize
+    vp.w = w; vp.h = h;
     measureMax();
     for (const s of scrubs) measureScrub(s);
-    ORR.emit('resize', vp);
+    if (!toolbarOnly) ORR.emit('resize', vp);
   }
   ORR.relayout = relayout;
   window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(relayout, 120); });

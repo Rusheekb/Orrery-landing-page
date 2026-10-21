@@ -27,8 +27,11 @@
       S.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       S.w = Math.max(1, r.width); S.h = Math.max(1, r.height);
       canvas.width = Math.round(S.w * S.dpr); canvas.height = Math.round(S.h * S.dpr);
+      let old = null;
+      if (trail.width > 1 && trail.height > 1) { old = document.createElement('canvas'); old.width = trail.width; old.height = trail.height; old.getContext('2d').drawImage(trail, 0, 0); }
       trail.width = canvas.width; trail.height = canvas.height;
       ctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0); tctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+      if (old) { tctx.globalCompositeOperation = 'source-over'; tctx.drawImage(old, 0, 0, S.w, S.h); } // the accumulated pentagram survives a resize
       const mobile = S.w <= 900;
       const inner = canvas.parentElement && canvas.parentElement.querySelector('.planetarium__inner');
       const band = mobile ? ((inner && parseFloat(getComputedStyle(inner).paddingBottom)) || S.h * 0.5) : 0; // the strip reserved for the orrery under the copy
