@@ -230,10 +230,10 @@
     const tiltX = touch ? 0 : -P.sny * 5, tiltY = touch ? 0 : P.snx * 6;
     const tilt = mobile ? 52 : 58, shrink = mobile ? 0.3 : 0.22;
     stage.style.transform = reduced ? `rotateY(-16deg) rotateX(${tilt}deg) scale(${1 - shrink})` : `rotateY(${(-16 * e + tiltY).toFixed(2)}deg) rotateX(${(tilt * e + tiltX).toFixed(2)}deg) scale(${(1 - shrink * e).toFixed(3)})`;
-    const spacing = stageSize * (mobile ? 0.2 : 0.22);
+    const spacing = stageSize * (mobile ? 0.2 : 0.18);
     const fi = u.clamp((p - 0.16) / 0.78, 0, 0.9999) * 7; const idx = Math.floor(fi);
     for (const L of layers) {
-      const z = (3 - L.i) * spacing * e;
+      const z = (3 - L.i) * (spacing * e + 0.5); // the constant keeps the stack ordered even at rest
       const active = L.i === idx;
       const dim = e > 0.6 ? (active ? 1 : 0.42) : 1;
       L.svg.style.transform = `translate3d(0,0,${z.toFixed(1)}px)`;

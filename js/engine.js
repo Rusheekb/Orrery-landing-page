@@ -201,8 +201,8 @@
             else html += `<span class="w">${Array.from(w).map(ch => `<span class="c" style="--i:${i++}">${esc(ch)}</span>`).join('')}</span>`;
           }
         } else if (child.nodeType === 1) {
-          const tag = child.tagName.toLowerCase();
-          html += `<${tag}>`; walk(child); html += `</${tag}>`;
+          const tag = child.tagName.toLowerCase(); const cls = child.getAttribute('class');
+          html += `<${tag}${cls ? ` class="${esc(cls)}"` : ''}>`; walk(child); html += `</${tag}>`;
         }
       }
     };
@@ -274,6 +274,7 @@
         const t = e.target.closest && e.target.closest(SEL);
         if (t && t === hoverEl) { hoverEl = null; cur.classList.remove('is-hover', 'has-label', 'is-text'); }
       });
+      window.addEventListener('pointermove', () => cur.classList.remove('is-hidden'), { once: true });
       document.addEventListener('mouseleave', () => cur.classList.add('is-hidden'));
       document.addEventListener('mouseenter', () => cur.classList.remove('is-hidden'));
       window.addEventListener('pointerdown', () => cur.classList.add('is-down'), { passive: true });
@@ -283,9 +284,11 @@
         const speed = Math.hypot(pointer.vx, pointer.vy);
         const k = hoverEl ? 0 : clamp(speed / 6000, 0, 0.35);
         const press = pointer.down ? 0.82 : 1;
-        const ang = Math.atan2(pointer.vy, pointer.vx) * 180 / Math.PI;
+        const upright = cur.classList.contains('has-label') || cur.classList.contains('is-text'); // labels and the caret never rotate
+        const ang = upright ? 0 : Math.atan2(pointer.vy, pointer.vx) * 180 / Math.PI;
+        const kk = upright ? 0 : k;
         dot.style.transform = `translate3d(${pointer.x}px,${pointer.y}px,0) scale(${pointer.down ? 1.6 : 1})`;
-        ring.style.transform = `translate3d(${rx}px,${ry}px,0) rotate(${ang.toFixed(1)}deg) scale(${((1 + k) * press).toFixed(3)}, ${((1 - k * 0.5) * press).toFixed(3)})`;
+        ring.style.transform = `translate3d(${rx}px,${ry}px,0) rotate(${ang.toFixed(1)}deg) scale(${((1 + kk) * press).toFixed(3)}, ${((1 - kk * 0.5) * press).toFixed(3)})`;
       });
     }
   }
