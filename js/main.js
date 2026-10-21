@@ -48,7 +48,7 @@
     if (!heroVisible) return;
     if (!reduced) {
       heroInner.style.transform = `translate3d(0, ${(hp * VP.h * 0.32).toFixed(1)}px, 0)`;
-      heroInner.style.opacity = (1 - hp * 1.25).toFixed(3);
+      heroInner.style.opacity = (1 - hp * 1.05).toFixed(3);
     }
     // watch tilt + float
     const rx = -P.sny * 11 + Math.sin(t * 0.7) * 1.5, ry = P.snx * 15 + Math.cos(t * 0.5) * 1.5;
@@ -61,7 +61,7 @@
         const c = heroChars[i], r = rects[i]; const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
         const dx = cx - P.x, dy = cy - P.y; const d = Math.hypot(dx, dy); const R = 300;
         let tx = 0, ty = 0, rot = 0;
-        if (d < R) { const f = (1 - d / R); const f2 = f * f; tx = (dx / d) * f2 * 46; ty = (dy / d) * f2 * 46; rot = (dx / d) * f2 * -6; }
+        if (d < R) { const f = (1 - d / R); const f2 = f * f; tx = (dx / d) * f2 * 22; ty = (dy / d) * f2 * 22; rot = (dx / d) * f2 * -2.5; }
         c.__x = u.damp(c.__x || 0, tx, 10, dt); c.__y = u.damp(c.__y || 0, ty, 10, dt); c.__r = u.damp(c.__r || 0, rot, 10, dt);
         c.style.transform = `translate3d(${c.__x.toFixed(2)}px, ${c.__y.toFixed(2)}px, 0) rotate(${c.__r.toFixed(2)}deg)`;
       }
@@ -82,11 +82,19 @@
   /* =====================================================================
      Loader
      ===================================================================== */
-  const loader = $('#loader'), lCount = $('#loaderCount'), lStatus = $('#loaderStatus'), lArc = loader.querySelector('.loader__arc'), lPlanet = loader.querySelector('.loader__planet');
+  const loader = $('#loader'), lStatus = $('#loaderStatus'), lRing = loader.querySelector('.loader__ring'), lArc = loader.querySelector('.loader__arc'), lPlanet = loader.querySelector('.loader__planet');
   const MSG = ['Calibrating escapement', 'Polishing the bevels', 'Setting the planets', 'Regulating the balance', 'Sealing the case'];
   const fontsReady = (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve());
   const minWait = new Promise(r => setTimeout(r, reduced ? 0 : 2000));
   function finishLoader() {
+    if (!reduced) { // the calibration ring flies out and lands on the bezel of the hero watch
+      const wr = heroWatchWrap.getBoundingClientRect(), rr = lRing.getBoundingClientRect();
+      if (wr.width > 0 && rr.width > 0) {
+        loader.style.setProperty('--tx', (wr.left + wr.width / 2 - (rr.left + rr.width / 2)).toFixed(1) + 'px');
+        loader.style.setProperty('--ty', (wr.top + wr.height / 2 - (rr.top + rr.height / 2)).toFixed(1) + 'px');
+        loader.style.setProperty('--s', ((wr.width * 0.892) / 108).toFixed(3)); // bezel outer radius is 446/1000 of the box; the arc's diameter is 108px
+      }
+    }
     loader.classList.add('is-done');
     document.body.classList.remove('is-loading'); document.documentElement.classList.remove('is-loading');
     for (const el of inertWhileLoading) { try { el.inert = false; } catch (e) { /* ignore */ } }
@@ -95,7 +103,7 @@
     heroTitle.classList.add('is-in');
     ORR.scramble($('#heroEyebrow'), null, 1200);
     setTimeout(() => { titleSettled = true; heroTitle.classList.add('is-settled'); }, reduced ? 0 : 2400);
-    setTimeout(() => loader.classList.add('is-gone'), reduced ? 0 : 1300);
+    setTimeout(() => loader.classList.add('is-gone'), reduced ? 0 : 2600);
     if (gl) gl.setIntro(1);
   }
   if (reduced) { setTimeout(finishLoader, 0); } // deferred so every const below is initialised first
@@ -103,7 +111,6 @@
     const start = performance.now(), dur = 1900; let mi = -1;
     (function step(now) {
       const t = u.clamp((now - start) / dur, 0, 1), e = u.ease.inOutCubic(t);
-      lCount.textContent = String(Math.round(e * 100)).padStart(3, '0');
       lArc.style.strokeDashoffset = (339.3 * (1 - e)).toFixed(1);
       lPlanet.style.transform = `rotate(${(e * 360).toFixed(1)}deg)`;
       const m = Math.min(MSG.length - 1, Math.floor(t * MSG.length));
@@ -205,6 +212,7 @@
     const y = SC.y + VP.h * 0.6; let active = sections[0];
     for (const s of sections) if (s.top <= y) active = s;
     const T = active.rgb;
+    document.body.classList.toggle('on-bone', active.el.id === 'collection');
     if (reduced) { bg[0] = T[0]; bg[1] = T[1]; bg[2] = T[2]; }
     else { bg[0] = u.damp(bg[0], T[0], 5, dt); bg[1] = u.damp(bg[1], T[1], 5, dt); bg[2] = u.damp(bg[2], T[2], 5, dt); }
     document.body.style.backgroundColor = `rgb(${bg[0].toFixed(1)},${bg[1].toFixed(1)},${bg[2].toFixed(1)})`;
@@ -219,7 +227,7 @@
     { name: 'Bezel', desc: 'Hand-polished 18k gold with a 0.6 mm chamfer. One artisan, four hours, no machine.' },
     { name: 'Hands', desc: 'Dauphine hands in flame-blued steel, 0.18 mm at the tip. The seconds hand sweeps at 3 Hz.' },
     { name: 'Dial', desc: 'Muonionalusta meteorite, etched to reveal a 4.5-billion-year-old crystal pattern, then cut on the rose engine in 1,440 passes.' },
-    { name: 'Planetarium module', desc: 'Six planets at their true heliocentric positions. Set once, at the atelier. One day of error in 1,142 years.' },
+    { name: 'Planetarium module', desc: 'Six planets at their true heliocentric positions, set once at the atelier and never again.' },
     { name: 'Calibre OR-01', desc: '412 components. 72-hour reserve. Free-sprung balance at 3 Hz, every interior angle bevelled by hand.' },
     { name: 'Caseback', desc: 'Sapphire exhibition back. Numbered 001 to 009 and engraved by hand in the Vallée de Joux.' },
   ];
@@ -270,10 +278,18 @@
      ===================================================================== */
   const track = $('#collectionTrack'); const cards = $$('.card[data-variant]');
   for (const card of cards) {
-    const w = ORR.makeWatch(card.dataset.variant); card.querySelector('.card__watch').appendChild(w); ORR.animateWatch(w);
-    card.__w = w; card.__rx = 0; card.__ry = 0; card.__hover = false;
+    const holder = card.querySelector('.card__watch'), turn = card.querySelector('.card__turn');
+    const flip = document.createElement('div'); flip.className = 'card__flip';
+    const w = ORR.makeWatch(card.dataset.variant); ORR.animateWatch(w);
+    const back = ORR.makeLayer(card.dataset.variant, 'caseback', 'card__back');
+    flip.appendChild(w); flip.appendChild(back); holder.insertBefore(flip, turn);
+    card.__w = flip; card.__rx = 0; card.__ry = 0; card.__hover = false; card.__back = false; card.__flipA = 0;
     card.addEventListener('pointerenter', () => { card.__hover = true; });
     card.addEventListener('pointerleave', () => { card.__hover = false; });
+    card.addEventListener('click', e => { // anywhere on the card turns the piece over, except the enquiry link
+      if (e.target.closest('.card__cta')) return;
+      card.__back = !card.__back; card.classList.toggle('is-back', card.__back); turn.setAttribute('aria-pressed', String(card.__back));
+    });
     const cta = card.querySelector('.card__cta');
     cta.addEventListener('click', () => { const y = $('#reserve').getBoundingClientRect().top + window.scrollY; ORR.scrollTo(y, reduced); setTimeout(() => $('#reserveEmail').focus({ preventScroll: true }), 900); });
   }
@@ -284,7 +300,9 @@
       if (card.__hover && !touch) { const r = card.getBoundingClientRect(); tx = ((P.y - r.top) / r.height - 0.5) * -18; ty = ((P.x - r.left) / r.width - 0.5) * 22; }
       card.__rx = u.damp(card.__rx, tx, 8, dt); card.__ry = u.damp(card.__ry, ty, 8, dt);
       card.__s = u.damp(card.__s || 1, card.__hover && !touch ? 1.045 : 1, 6, dt);
-      if (Math.abs(card.__rx) > 0.01 || Math.abs(card.__ry) > 0.01 || Math.abs(card.__s - 1) > 0.001) card.__w.style.transform = `rotateX(${card.__rx.toFixed(2)}deg) rotateY(${card.__ry.toFixed(2)}deg) scale(${card.__s.toFixed(4)})`;
+      card.__flipA = reduced ? (card.__back ? 180 : 0) : u.damp(card.__flipA, card.__back ? 180 : 0, 5, dt);
+      const t = `rotateX(${card.__rx.toFixed(2)}deg) rotateY(${(card.__ry + card.__flipA).toFixed(2)}deg) scale(${card.__s.toFixed(4)})`;
+      if (t !== card.__lastT) { card.__lastT = t; card.__w.style.transform = t; }
     }
   });
   let trackMax = 0;
@@ -324,7 +342,7 @@
   /* =====================================================================
      Counters
      ===================================================================== */
-  const cio = new IntersectionObserver(en => { for (const e of en) if (e.isIntersecting) { const el = e.target; ORR.countTo(el, parseFloat(el.dataset.count), 1800 + Math.random() * 600, parseInt(el.dataset.decimals || '0', 10)); cio.unobserve(el); } }, { threshold: 0.5 });
+  const cio = new IntersectionObserver(en => { for (const e of en) if (e.isIntersecting) { const el = e.target; ORR.countTo(el, parseFloat(el.dataset.count), 1800 + Math.random() * 600, parseInt(el.dataset.decimals || '0', 10), el.hasAttribute('data-plain')); cio.unobserve(el); } }, { threshold: 0.5 });
   $$('[data-count]').forEach(el => cio.observe(el));
 
   /* =====================================================================
@@ -347,29 +365,42 @@
       phase += dt * (0.25 + Math.abs(SC.svel) * 0.0008);
       const cx = w / 2, cy = h / 2, R = Math.min(w, h) / 2;
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = '#0a0907'; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.fill();
+      // the lamp: the pointer while it is on the plate, otherwise a fixed key light top-left
+      const lit = press > 0.02;
+      const lampX = lit ? mx : cx - R * 0.45, lampY = lit ? my : cy - R * 0.5;
+      const plate = ctx.createRadialGradient(lampX, lampY, 0, cx, cy, R * 1.15);
+      plate.addColorStop(0, '#2a2318'); plate.addColorStop(0.5, '#15100b'); plate.addColorStop(1, '#0a0907');
+      ctx.fillStyle = plate; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.fill();
       const sig = R * 0.38, amp = R * 0.08 * press;
-      const fam = [{ n: 46, waves: 36, a: 0.012, alpha: 0.30, r0: 0.08, r1: 0.95 }, { n: 22, waves: 11, a: 0.03, alpha: 0.13, r0: 0.2, r1: 0.9 }];
+      const fam = [{ n: 30, waves: 24, a: 0.012, alpha: 0.5, r0: 0.08, r1: 0.95 }, { n: 14, waves: 9, a: 0.03, alpha: 0.26, r0: 0.2, r1: 0.9 }];
       const warpOn = amp > 0.02; // the stylus only bends the lines while a pointer is on the plate
-      const sig2 = sig * sig;
+      const sig2 = sig * sig; const lampD = Math.hypot(lampX - cx, lampY - cy);
       for (const F of fam) {
-        ctx.strokeStyle = `rgba(201,164,92,${F.alpha})`; ctx.lineWidth = 0.8;
         for (let i = 0; i < F.n; i++) {
           const rr = R * (F.r0 + (F.r1 - F.r0) * i / (F.n - 1));
           const ph = i * 0.5 + phase * (i % 2 ? 1 : -1); const amp2 = R * F.a;
-          ctx.beginPath();
+          const li = 0.25 + 0.75 * Math.exp(-Math.abs(lampD - rr) / (R * 0.55)); // how close the lamp sits to this groove
+          const path = new Path2D();
           for (let k = 0; k <= 200; k++) {
             const wave = rr + amp2 * Math.sin(F.waves * TH[k] + ph);
             let x = cx + wave * COS[k], y = cy + wave * SIN[k];
             if (warpOn) { const dx = x - mx, dy = y - my; const d2 = dx * dx + dy * dy; const g = Math.exp(-d2 / sig2) * amp; const d = Math.sqrt(d2) || 1; x += (dx / d) * g; y += (dy / d) * g; }
-            if (k) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+            if (k) path.lineTo(x, y); else path.moveTo(x, y);
           }
-          ctx.stroke();
+          path.closePath();
+          // every groove has a shadowed edge and a lit edge
+          ctx.save(); ctx.translate(0.8, 0.8); ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1.3; ctx.stroke(path); ctx.restore();
+          ctx.save(); ctx.translate(-0.5, -0.5); ctx.strokeStyle = `rgba(241,212,140,${(F.alpha * li).toFixed(3)})`; ctx.lineWidth = 0.9; ctx.stroke(path); ctx.restore();
         }
       }
-      // the stylus
-      if (press > 0.02) { ctx.strokeStyle = `rgba(241,212,140,${(0.6 * press).toFixed(2)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(mx, my, 6, 0, 6.283); ctx.stroke(); ctx.beginPath(); ctx.moveTo(mx - 14, my); ctx.lineTo(mx + 14, my); ctx.moveTo(mx, my - 14); ctx.lineTo(mx, my + 14); ctx.stroke(); }
-      ctx.strokeStyle = 'rgba(236,230,218,.18)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, R - 0.5, 0, 6.283); ctx.stroke();
+      // the lamp's pool of light on the metal
+      if (lit) {
+        ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.clip();
+        const glow = ctx.createRadialGradient(mx, my, 0, mx, my, R * 0.32);
+        glow.addColorStop(0, `rgba(241,212,140,${(0.22 * press).toFixed(3)})`); glow.addColorStop(1, 'rgba(241,212,140,0)');
+        ctx.fillStyle = glow; ctx.fillRect(mx - R * 0.32, my - R * 0.32, R * 0.64, R * 0.64); ctx.restore();
+      }
+      ctx.strokeStyle = 'rgba(236,230,218,.22)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, R - 0.5, 0, 6.283); ctx.stroke();
     });
   })();
 

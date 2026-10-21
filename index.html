@@ -43,7 +43,6 @@
       <circle class="loader__arc" cx="60" cy="60" r="54"/>
       <circle class="loader__planet" cx="114" cy="60" r="3"/>
     </svg>
-    <div class="loader__count" id="loaderCount">000</div>
     <div class="loader__status" id="loaderStatus">Calibrating escapement</div>
   </div>
 </div>
@@ -56,9 +55,9 @@
   </a>
   <nav class="nav__links" aria-label="Primary">
     <a href="#anatomy" data-scramble>Anatomy</a>
-    <a href="#collection" data-scramble>Collection</a>
     <a href="#planetarium" data-scramble>Planetarium</a>
     <a href="#atelier" data-scramble>Atelier</a>
+    <a href="#collection" data-scramble>Collection</a>
     <a href="#reserve" data-scramble>Reserve</a>
   </nav>
   <div class="nav__right">
@@ -75,11 +74,11 @@
 <div class="menu" id="menu" aria-hidden="true">
   <button class="menu__close" id="menuClose" type="button">Close</button>
   <nav class="menu__links" aria-label="Mobile">
-    <a href="#anatomy"><span>I</span>Anatomy</a>
-    <a href="#collection"><span>II</span>Collection</a>
-    <a href="#planetarium"><span>III</span>Planetarium</a>
-    <a href="#atelier"><span>IV</span>Atelier</a>
-    <a href="#reserve"><span>V</span>Reserve</a>
+    <a href="#anatomy"><span aria-hidden="true">I</span>Anatomy</a>
+    <a href="#planetarium"><span aria-hidden="true">II</span>Planetarium</a>
+    <a href="#atelier"><span aria-hidden="true">III</span>Atelier</a>
+    <a href="#collection"><span aria-hidden="true">IV</span>Collection</a>
+    <a href="#reserve"><span aria-hidden="true">V</span>Reserve</a>
   </nav>
   <p class="menu__foot">Rue du Rhône 13 · Genève</p>
 </div>
@@ -133,7 +132,7 @@
     <div class="anatomy__pin">
       <div class="anatomy__head">
         <p class="section-label mono"><span aria-hidden="true">II</span> Anatomy</p>
-        <h2 class="anatomy__title">Anatomy of a <em>Perihelion</em></h2>
+        <h2 class="anatomy__title">Anatomy of a Perihelion</h2>
       </div>
 
       <div class="anatomy__stage-wrap">
@@ -160,71 +159,12 @@
     </div>
   </section>
 
-  <!-- COLLECTION (pinned horizontal) -->
-  <section class="collection" id="collection" data-bg="#0a0912">
-    <div class="collection__pin">
-      <div class="collection__head">
-        <div class="collection__head-text">
-          <p class="section-label mono" data-reveal><span aria-hidden="true">III</span> Collection</p>
-          <h2 class="collection__title" data-reveal>Four calibres. <em>Nine</em> pieces each.</h2>
-        </div>
-        <p class="collection__hint mono" aria-hidden="true">Scroll to glide <i></i></p>
-      </div>
-      <div class="collection__track" id="collectionTrack">
-        <article class="card" data-variant="perihelion" data-cursor="View">
-          <div class="card__num mono">I</div>
-          <div class="card__watch"></div>
-          <div class="card__body">
-            <h3 class="card__name">Perihelion</h3>
-            <p class="card__spec mono">Yellow gold · Meteorite dial</p>
-            <p class="card__price mono">CHF 184,000</p>
-            <button class="card__cta" type="button"><span>Enquire</span></button>
-          </div>
-        </article>
-        <article class="card" data-variant="aphelion" data-cursor="View">
-          <div class="card__num mono">II</div>
-          <div class="card__watch"></div>
-          <div class="card__body">
-            <h3 class="card__name">Aphelion</h3>
-            <p class="card__spec mono">Platinum · Glacier enamel dial</p>
-            <p class="card__price mono">CHF 212,000</p>
-            <button class="card__cta" type="button"><span>Enquire</span></button>
-          </div>
-        </article>
-        <article class="card" data-variant="umbra" data-cursor="View">
-          <div class="card__num mono">III</div>
-          <div class="card__watch"></div>
-          <div class="card__body">
-            <h3 class="card__name">Umbra</h3>
-            <p class="card__spec mono">Black ceramic · Obsidian dial</p>
-            <p class="card__price mono">CHF 168,000</p>
-            <button class="card__cta" type="button"><span>Enquire</span></button>
-          </div>
-        </article>
-        <article class="card" data-variant="syzygy" data-cursor="View">
-          <div class="card__num mono">IV</div>
-          <div class="card__watch"></div>
-          <div class="card__body">
-            <h3 class="card__name">Syzygy</h3>
-            <p class="card__spec mono">Rose gold · Grand feu bone enamel</p>
-            <p class="card__price mono">CHF 196,000</p>
-            <button class="card__cta" type="button"><span>Enquire</span></button>
-          </div>
-        </article>
-        <div class="card card--end">
-          <p class="card__end-text">Each piece is numbered <span class="mono">001–009</span> and never remade.</p>
-          <a class="btn btn--dark magnetic" href="#reserve"><span class="btn__fill"></span><span class="btn__label">Request an audience</span></a>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- PLANETARIUM -->
-  <section class="planetarium" id="planetarium" data-bg="#0a0912">
+  <section class="planetarium" id="planetarium" data-bg="#0d0b09">
     <canvas class="planetarium__canvas" id="planetariumCanvas" aria-hidden="true"></canvas>
     <div class="planetarium__inner">
       <div class="planetarium__copy">
-        <p class="section-label mono" data-reveal><span aria-hidden="true">IV</span> Planetarium</p>
+        <p class="section-label mono" data-reveal><span aria-hidden="true">III</span> Planetarium</p>
         <h2 class="planetarium__title" data-reveal>The sky, <em>worn.</em></h2>
         <p class="planetarium__text" data-reveal>The Perihelion complication tracks the true heliocentric position of six planets. Set once at the atelier, it needs no correction for 1,142 years. <span class="pointer-only">Move your cursor</span><span class="touch-only">Drag across the sky</span> to bend the orbits. The mechanism will forgive you.</p>
         <dl class="planetarium__stats" data-reveal>
@@ -245,8 +185,8 @@
   <section class="atelier" id="atelier" data-bg="#0d0b09">
     <div class="atelier__inner">
       <div class="atelier__copy">
-        <p class="section-label mono" data-reveal><span aria-hidden="true">V</span> Atelier</p>
-        <h2 class="atelier__title" data-reveal><span class="nowrap">Eleven people.</span> <span class="nowrap">Nine watches.</span> <em class="nowrap">One year.</em></h2>
+        <p class="section-label mono" data-reveal><span aria-hidden="true">IV</span> Atelier</p>
+        <h2 class="atelier__title" data-reveal><span class="nowrap">Eleven people.</span> <span class="nowrap">Nine watches.</span> <span class="nowrap">One year.</span></h2>
         <p class="atelier__text" data-reveal>Every Orrery is finished by hand in a workshop above the Rhône. We do not have a production line. We have a table, eleven pairs of hands, and a rose engine built in 1911.</p>
       </div>
       <div class="atelier__engine" data-reveal>
@@ -255,15 +195,74 @@
       </div>
     </div>
     <dl class="stats" data-reveal>
-      <div class="stats__item"><dt class="mono">Components</dt><dd><span data-count="412">0</span></dd></div>
-      <div class="stats__item"><dt class="mono">Power reserve</dt><dd><span data-count="72">0</span>h</dd></div>
-      <div class="stats__item"><dt class="mono">Pieces a year</dt><dd><span data-count="9">0</span></dd></div>
-      <div class="stats__item"><dt class="mono">Years before a day's drift</dt><dd><span data-count="1142">0</span></dd></div>
+      <div class="stats__item"><dt class="mono">People</dt><dd><span data-count="11">0</span></dd></div>
+      <div class="stats__item"><dt class="mono">Rose engine, built</dt><dd><span data-count="1911" data-plain>0</span></dd></div>
+      <div class="stats__item"><dt class="mono">Hours per bevel</dt><dd><span data-count="4">0</span></dd></div>
+      <div class="stats__item"><dt class="mono">Passes per dial</dt><dd><span data-count="1440">0</span></dd></div>
       <div class="stats__item"><dt class="mono">Shortcuts</dt><dd><span data-count="0">0</span></dd></div>
     </dl>
     <div class="marquee" id="marquee" aria-hidden="true">
       <div class="marquee__track" id="marqueeTrack">
-        <span>Orrery</span><i></i><span>Genève</span><i></i><span>Calibre OR-01</span><i></i><span>Planetarium</span><i></i><span>Nine pieces a year</span><i></i><span>Hand-finished</span><i></i>
+        <span>Orrery</span><i></i><span>Genève</span><i></i><span>Calibre OR-01</span><i></i><span>412 composants</span><i></i><span>72 heures</span><i></i><span>Swiss made</span><i></i>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLLECTION (pinned horizontal) -->
+  <section class="collection" id="collection" data-bg="#07070a">
+    <div class="collection__pin">
+      <div class="collection__head">
+        <div class="collection__head-text">
+          <p class="section-label mono" data-reveal><span aria-hidden="true">V</span> Collection</p>
+          <h2 class="collection__title" data-reveal>Four calibres. Nine pieces each.</h2>
+        </div>
+        <p class="collection__hint mono" aria-hidden="true">Scroll to glide <i></i></p>
+      </div>
+      <div class="collection__track" id="collectionTrack">
+        <article class="card" data-variant="perihelion" data-cursor="Turn">
+          <div class="card__num mono">I</div>
+          <div class="card__watch"><button class="card__turn" type="button" aria-pressed="false"><span class="sr-only">Turn the watch over</span></button></div>
+          <div class="card__body">
+            <h3 class="card__name">Perihelion</h3>
+            <p class="card__spec mono">Yellow gold · Meteorite dial</p>
+            <p class="card__price mono">CHF 184,000</p>
+            <button class="card__cta" type="button"><span>Enquire</span></button>
+          </div>
+        </article>
+        <article class="card" data-variant="aphelion" data-cursor="Turn">
+          <div class="card__num mono">II</div>
+          <div class="card__watch"><button class="card__turn" type="button" aria-pressed="false"><span class="sr-only">Turn the watch over</span></button></div>
+          <div class="card__body">
+            <h3 class="card__name">Aphelion</h3>
+            <p class="card__spec mono">Platinum · Glacier enamel dial</p>
+            <p class="card__price mono">CHF 212,000</p>
+            <button class="card__cta" type="button"><span>Enquire</span></button>
+          </div>
+        </article>
+        <article class="card" data-variant="umbra" data-cursor="Turn">
+          <div class="card__num mono">III</div>
+          <div class="card__watch"><button class="card__turn" type="button" aria-pressed="false"><span class="sr-only">Turn the watch over</span></button></div>
+          <div class="card__body">
+            <h3 class="card__name">Umbra</h3>
+            <p class="card__spec mono">Black ceramic · Obsidian dial</p>
+            <p class="card__price mono">CHF 168,000</p>
+            <button class="card__cta" type="button"><span>Enquire</span></button>
+          </div>
+        </article>
+        <article class="card" data-variant="syzygy" data-cursor="Turn">
+          <div class="card__num mono">IV</div>
+          <div class="card__watch"><button class="card__turn" type="button" aria-pressed="false"><span class="sr-only">Turn the watch over</span></button></div>
+          <div class="card__body">
+            <h3 class="card__name">Syzygy</h3>
+            <p class="card__spec mono">Rose gold · Grand feu bone enamel</p>
+            <p class="card__price mono">CHF 196,000</p>
+            <button class="card__cta" type="button"><span>Enquire</span></button>
+          </div>
+        </article>
+        <div class="card card--end">
+          <p class="card__end-text">Each piece is numbered <span class="mono">001–009</span> and never remade.</p>
+          <a class="btn btn--dark magnetic" href="#reserve"><span class="btn__fill"></span><span class="btn__label">Request an audience</span></a>
+        </div>
       </div>
     </div>
   </section>
@@ -302,7 +301,7 @@
   <div class="footer__grid">
     <nav class="footer__col" aria-label="Footer">
       <p class="mono footer__head">Maison</p>
-      <a href="#anatomy">Anatomy</a><a href="#collection">Collection</a><a href="#planetarium">Planetarium</a><a href="#atelier">Atelier</a>
+      <a href="#anatomy">Anatomy</a><a href="#planetarium">Planetarium</a><a href="#atelier">Atelier</a><a href="#collection">Collection</a>
     </nav>
     <div class="footer__col">
       <p class="mono footer__head">Correspondence</p>

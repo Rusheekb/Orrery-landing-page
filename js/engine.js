@@ -219,7 +219,7 @@
   };
 
   /* ---------- scramble ---------- */
-  const CH = 'ORRERY0123456789·—◇ΔΩ';
+  const CH = 'ORRERY0123456789·—';
   ORR.scramble = (el, text, dur) => {
     dur = dur || 900;
     text = text != null ? text : (el.dataset.text || el.textContent);
@@ -243,10 +243,10 @@
   };
 
   /* ---------- counters ---------- */
-  ORR.countTo = (el, to, dur, decimals) => {
+  ORR.countTo = (el, to, dur, decimals, plain) => {
     const from = parseFloat(el.textContent) || 0; const start = performance.now();
     dur = dur || 1600; decimals = decimals || 0;
-    const fmt = v => v.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    const fmt = v => v.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: !plain });
     if (reduced) { el.textContent = fmt(to); return; }
     const step = now => {
       const t = clamp((now - start) / dur, 0, 1);
