@@ -34,4 +34,8 @@ js/main.js          page wiring
 
 No build step, no dependencies. Fonts are loaded from Google Fonts (Bodoni Moda, Instrument Sans, Geist Mono).
 
+## Performance notes
+
+Every watch is two stacked SVGs: a static base (case, dial, guilloché, metal) and a transparent live overlay (hands, planets, glare). Per-frame updates only touch the overlay, so the expensive dial never re-rasterises. The exploded module and calibre layers are split the same way. Moving watches use static gradient shadows instead of `filter: drop-shadow`, canvases are capped at 1.5× density, and scrub-driven styles are written only when their values change. Off-screen watches and canvases pause through IntersectionObserver.
+
 Orrery is a fictional maison; all names, prices and specifications are invented.
