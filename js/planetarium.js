@@ -35,7 +35,11 @@
       S.cx = mobile ? S.w * 0.5 : S.w * 0.64;
       S.cy = mobile ? S.h - band * 0.5 : S.h * 0.52;
       S.R = mobile ? Math.min(S.w * 0.44, band * 0.4) : Math.min(S.w * 0.3, S.h * 0.42);
+      S.sunGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, S.R * 0.16);
+      S.sunGrad.addColorStop(0, 'rgba(255,242,194,1)'); S.sunGrad.addColorStop(0.25, 'rgba(241,212,140,0.9)'); S.sunGrad.addColorStop(1, 'rgba(201,164,92,0)');
     }
+    const BUCKETS = Array.from({ length: 8 }, () => []);
+    for (const p of PL) { p.grad = ctx.createRadialGradient(0, 0, 0, 0, 0, p.r * 4); p.grad.addColorStop(0, p.c); p.grad.addColorStop(0.3, p.c + '66'); p.grad.addColorStop(1, p.c + '00'); }
     resize();
 
     const orbitR = a => S.R * (0.2 + 0.8 * Math.sqrt(a / 9.537));
@@ -52,6 +56,7 @@
     function render(dt) {
       if (!S.visible || document.hidden) return;
       const P = ORR.pointer; const rect = canvas.getBoundingClientRect();
+      if (rect.bottom < 40 || rect.top > innerHeight - 40) return; // only a sliver on screen
       const inside = ORR.pointerLive() && P.x >= rect.left && P.x <= rect.right && P.y >= rect.top && P.y <= rect.bottom;
       S.tmx = inside ? P.x - rect.left : -1e4; S.tmy = inside ? P.y - rect.top : -1e4;
       if (S.tmx < -5e3) { S.mx = u.damp(S.mx, S.tmx, 2.5, dt); S.my = u.damp(S.my, S.tmy, 2.5, dt); }
@@ -76,11 +81,10 @@
       ctx.clearRect(0, 0, S.w, S.h);
       // stars
       const px = P.snx * 14, py = P.sny * 14;
-      for (const s of S.stars) {
-        const tw = 0.6 + 0.4 * Math.sin(ORR.time * 1.3 + s.tw);
-        ctx.globalAlpha = s.a * tw; ctx.fillStyle = '#ece6da';
-        ctx.beginPath(); ctx.arc(s.x * S.w - px * s.d, s.y * S.h - py * s.d, s.s, 0, 6.283); ctx.fill();
-      }
+      // stars batched into 8 alpha buckets: one fill per bucket instead of one per star
+      for (const s of S.stars) { const tw = 0.6 + 0.4 * Math.sin(ORR.time * 1.3 + s.tw); BUCKETS[Math.min(7, (s.a * tw * 8) | 0)].push(s); }
+      ctx.fillStyle = '#ece6da';
+      for (let b = 0; b < 8; b++) { const list = BUCKETS[b]; if (!list.length) continue; ctx.globalAlpha = (b + 0.5) / 8; ctx.beginPath(); for (const s of list) ctx.rect(s.x * S.w - px * s.d - s.s, s.y * S.h - py * s.d - s.s, s.s * 2, s.s * 2); ctx.fill(); list.length = 0; }
       ctx.globalAlpha = 1;
       ctx.drawImage(trail, 0, 0, S.w, S.h);
 
@@ -96,17 +100,13 @@
       }
       // sun
       const [sx, sy] = warp(S.cx, S.cy);
-      const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, S.R * 0.16);
-      g.addColorStop(0, 'rgba(255,242,194,1)'); g.addColorStop(0.25, 'rgba(241,212,140,0.9)'); g.addColorStop(1, 'rgba(201,164,92,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, sy, S.R * 0.16, 0, 6.283); ctx.fill();
+      ctx.save(); ctx.translate(sx, sy); ctx.fillStyle = S.sunGrad; ctx.beginPath(); ctx.arc(0, 0, S.R * 0.16, 0, 6.283); ctx.fill(); ctx.restore();
       ctx.fillStyle = '#fff6d8'; ctx.beginPath(); ctx.arc(sx, sy, 5, 0, 6.283); ctx.fill();
       // planets
       ctx.font = '500 9px "Geist Mono", "DM Mono", ui-monospace, monospace'; ctx.textBaseline = 'middle';
       for (const p of PL) {
         const [x, y] = warp(...planetPos(p, S.t));
-        const gg = ctx.createRadialGradient(x, y, 0, x, y, p.r * 4);
-        gg.addColorStop(0, p.c); gg.addColorStop(0.3, p.c + '66'); gg.addColorStop(1, p.c + '00');
-        ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(x, y, p.r * 4, 0, 6.283); ctx.fill();
+        ctx.save(); ctx.translate(x, y); ctx.fillStyle = p.grad; ctx.beginPath(); ctx.arc(0, 0, p.r * 4, 0, 6.283); ctx.fill(); ctx.restore();
         ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(x, y, p.r, 0, 6.283); ctx.fill();
         if (p.ring) { ctx.strokeStyle = p.c; ctx.globalAlpha = 0.7; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(x, y, p.r * 2.1, p.r * 0.7, -0.4, 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1; }
         ctx.fillStyle = 'rgba(236,230,218,0.55)'; ctx.fillText(p.n.toUpperCase(), x + p.r + 7, y);

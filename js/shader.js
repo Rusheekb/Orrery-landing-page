@@ -109,7 +109,9 @@ void main(){
       const r = canvas.getBoundingClientRect();
       state.cw = Math.max(1, r.width); state.ch = Math.max(1, r.height);
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const scale = ORR.touch ? 0.45 : Math.min(0.8, Math.max(0.5, 0.5 * dpr));
+      // resolution follows a fragment budget: the field is low-frequency and film grain hides any softness
+      const budget = ORR.touch ? 3.5e5 : 9e5;
+      const scale = Math.min(ORR.touch ? 0.5 : 0.8, Math.max(0.4, 0.5 * dpr), Math.sqrt(budget / (state.cw * state.ch)));
       state.w = Math.max(2, Math.round(state.cw * scale)); state.h = Math.max(2, Math.round(state.ch * scale));
       canvas.width = state.w; canvas.height = state.h;
       gl.viewport(0, 0, state.w, state.h);
@@ -130,7 +132,7 @@ void main(){
         ripples[i] = x; ripples[i + 1] = y; ripples[i + 2] = ORR.time; ripples[i + 3] = strength || 1;
       },
       render: (dt) => {
-        if (!state.visible || state.lost || document.hidden) return;
+        if (!state.visible || state.lost || document.hidden || state.scroll >= 0.92) return; // past 92% the field is dark and the copy has gone
         const r = canvas.getBoundingClientRect();
         const asp = state.cw / state.ch;
         const P = ORR.pointer;

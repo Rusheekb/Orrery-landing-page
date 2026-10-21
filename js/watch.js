@@ -43,7 +43,28 @@
     for (let i = 0; i <= N; i++) { const t = i / N; const a = t * turns * Math.PI * 2; const r = r0 + (r1 - r0) * t; d += (i ? 'L' : 'M') + f1(cx + r * Math.cos(a)) + ',' + f1(cy + r * Math.sin(a)); }
     return d;
   }
-  function guilloche(cx, cy, rMin, rMax, count, waves, amp, color, clipId) {
+  /* ---- baked textures: the guilloche and the finishing patterns are drawn once
+     onto a canvas and referenced as <image>, so a watch rasterises as a few
+     textured quads instead of thousands of stroked segments ---- */
+  const BAKE_SCALE = 1.25; // canvas px per SVG unit; the largest on-screen watch is ~600 CSS px at 2x
+  const bakes = {};
+  /* one hidden <svg><defs> holds each texture once; watches reference it with <use> */
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  let texDefs = null, texCount = 0;
+  function registerTexture(href, x, y, w, h) {
+    if (!texDefs) {
+      const svg = document.createElementNS(SVGNS, 'svg'); svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.setAttribute('aria-hidden', 'true');
+      svg.id = 'orrery-textures'; svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+      texDefs = document.createElementNS(SVGNS, 'defs'); svg.appendChild(texDefs); document.body.appendChild(svg);
+    }
+    const id = 'tex' + (texCount++);
+    const img = document.createElementNS(SVGNS, 'image');
+    img.setAttribute('id', id); img.setAttribute('href', href);
+    img.setAttribute('x', f1(x)); img.setAttribute('y', f1(y)); img.setAttribute('width', f1(w)); img.setAttribute('height', f1(h));
+    texDefs.appendChild(img);
+    return id;
+  }
+  function guillochePaths(cx, cy, rMin, rMax, count, waves, amp, color, clipId) {
     let out = '';
     for (let i = 0; i < count; i++) {
       const r = rMin + ((rMax - rMin) * i) / (count - 1);
@@ -56,6 +77,52 @@
       out += `<path d="${d}Z"/>`;
     }
     return `<g fill="none" stroke="${color}" stroke-width="0.9"${clipId ? ` clip-path="url(#${clipId})"` : ''}>${out}</g>`;
+  }
+  function bakeCanvas(size) { const cv = document.createElement('canvas'); cv.width = cv.height = Math.ceil(size * BAKE_SCALE); const ctx = cv.getContext('2d'); ctx.scale(BAKE_SCALE, BAKE_SCALE); return { cv, ctx }; }
+  function toHref(cv) { try { return cv.toDataURL('image/png'); } catch (e) { return null; } }
+  function bakeGuilloche(cx, cy, rMin, rMax, count, waves, amp, color) {
+    const key = 'g|' + color + '|' + count + '|' + waves + '|' + rMax;
+    if (bakes[key] !== undefined) return bakes[key];
+    const pad = rMax + amp + 4, size = pad * 2; const { cv, ctx } = bakeCanvas(size);
+    ctx.translate(pad - cx, pad - cy); ctx.strokeStyle = color; ctx.lineWidth = 0.9; ctx.lineJoin = 'round';
+    for (let i = 0; i < count; i++) {
+      const r = rMin + ((rMax - rMin) * i) / (count - 1); const a = amp * (0.55 + 0.45 * Math.sin(i * 0.9));
+      ctx.beginPath();
+      for (let k = 0; k <= 150; k++) { const th = (k / 150) * Math.PI * 2; const rr = r + a * Math.sin(waves * th + i * 0.42); const x = cx + rr * Math.cos(th), y = cy + rr * Math.sin(th); if (k) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+      ctx.closePath(); ctx.stroke();
+    }
+    const href = toHref(cv);
+    return (bakes[key] = href ? registerTexture(href, cx - pad, cy - pad, size, size) : null);
+  }
+  function guilloche(cx, cy, rMin, rMax, count, waves, amp, color, clipId) {
+    const id = bakeGuilloche(cx, cy, rMin, rMax, count, waves, amp, color);
+    if (!id) return guillochePaths(cx, cy, rMin, rMax, count, waves, amp, color, clipId);
+    return `<use href="#${id}"${clipId ? ` clip-path="url(#${clipId})"` : ''}/>`;
+  }
+  /* finishing discs: 'perlage' (overlapping circular graining) and 'cotes' (Geneva stripes) */
+  function bakeDisc(kind, r) {
+    const key = kind + '|' + r;
+    if (bakes[key] !== undefined) return bakes[key];
+    const size = r * 2; const { cv, ctx } = bakeCanvas(size);
+    ctx.beginPath(); ctx.arc(r, r, r, 0, Math.PI * 2); ctx.clip();
+    if (kind === 'perlage') {
+      ctx.strokeStyle = '#3a3a40'; ctx.lineWidth = 2;
+      for (let y = 15; y < size + 15; y += 30) for (let x = 15; x < size + 15; x += 30) { ctx.beginPath(); ctx.arc(x, y, 11, 0, Math.PI * 2); ctx.stroke(); }
+    } else {
+      ctx.fillStyle = '#26262b'; ctx.fillRect(0, 0, size, size);
+      ctx.translate(r, r); ctx.rotate(-28 * Math.PI / 180);
+      const L = size; // long enough to cover the rotated disc
+      for (let x = -L; x < L; x += 24) { ctx.fillStyle = '#303037'; ctx.fillRect(x, -L, 12, L * 2); ctx.fillStyle = '#3c3c44'; ctx.fillRect(x + 11, -L, 1, L * 2); }
+    }
+    const href = toHref(cv);
+    return (bakes[key] = href ? registerTexture(href, C - r, C - r, size, size) : null);
+  }
+  function disc(kind, u, r, opacity, clipId) {
+    const id = bakeDisc(kind, r);
+    const op = opacity != null ? ` opacity="${opacity}"` : '';
+    const clip = clipId ? ` clip-path="url(#${clipId})"` : '';
+    if (!id) return `<circle cx="${C}" cy="${C}" r="${r}" fill="url(#${u}-${kind})"${op}${clip}/>`;
+    return `<use href="#${id}"${op}${clip}/>`;
   }
   function ring(r, w, fill, extra) { const ro = r + w / 2, ri = r - w / 2; return `<path fill-rule="evenodd" fill="${fill}" ${extra || ''} d="M${C - ro},${C} a${ro},${ro} 0 1,0 ${ro * 2},0 a${ro},${ro} 0 1,0 ${-ro * 2},0 Z M${C - ri},${C} a${ri},${ri} 0 1,0 ${ri * 2},0 a${ri},${ri} 0 1,0 ${-ri * 2},0 Z"/>`; }
 
@@ -74,6 +141,7 @@
 <pattern id="${u}-cotes" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(-28)"><rect width="24" height="24" fill="#26262b"/><rect width="12" height="24" fill="#303037"/><rect x="11" width="1" height="24" fill="#3c3c44"/></pattern>
 <pattern id="${u}-perlage" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="11" fill="none" stroke="#3a3a40" stroke-width="2"/></pattern>
 <clipPath id="${u}-dialclip"><path fill-rule="evenodd" clip-rule="evenodd" d="M${C - 388},${C} a388,388 0 1,0 776,0 a388,388 0 1,0 -776,0 Z M${C - 112},655 a112,112 0 1,0 224,0 a112,112 0 1,0 -224,0 Z"/></clipPath>
+<clipPath id="${u}-rotorclip"><path d="M${C},${C} L${C + 300},${C} A300,300 0 0,1 ${C - 300},${C} Z"/></clipPath>
 <path id="${u}-arc" d="M${C},${C} m-370,0 a370,370 0 1,1 740,0 a370,370 0 1,1 -740,0"/>
 <path id="${u}-arcin" d="M${C},${C} m-245,0 a245,245 0 1,1 490,0 a245,245 0 1,1 -490,0"/>
 </defs>`;
@@ -90,7 +158,7 @@
 <circle cx="${C}" cy="${C}" r="446" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/>
 <circle cx="${C}" cy="${C}" r="410" fill="#0a0a0c"/>
 <circle cx="${C}" cy="${C}" r="410" fill="none" stroke="rgba(0,0,0,.6)" stroke-width="6"/>
-<circle cx="${C}" cy="${C}" r="398" fill="url(#${u}-perlage)" opacity=".5"/>
+${disc('perlage', u, 398, '.5')}
 </g>`;
 
   L.caseback = (u, v) => `<g class="l-caseback">
@@ -133,7 +201,7 @@ ${ticks.join('')}${idx.join('')}
     const orbits = [38, 62, 86]; const cx = C, cy = 655;
     return `<g class="l-module">
 <circle cx="${C}" cy="${C}" r="392" fill="#121216"/>
-<circle cx="${C}" cy="${C}" r="392" fill="url(#${u}-perlage)" opacity=".45"/>
+${disc('perlage', u, 392, '.45')}
 <circle cx="${C}" cy="${C}" r="392" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
 <path data-cx="270" data-cy="300" d="${gearPath(270, 300, 58, 20, 10, 4)}" fill-rule="evenodd" fill="url(#${u}-metal3)" class="gear" data-rate="1.4"/>
 <path data-cx="740" data-cy="280" d="${gearPath(740, 280, 44, 16, 9, 3)}" fill-rule="evenodd" fill="url(#${u}-metal3)" class="gear" data-rate="-1.9"/>
@@ -166,7 +234,7 @@ ${orbits.map(r => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${
 
   L.movement = (u, v) => `<g class="l-movement">
 <circle cx="${C}" cy="${C}" r="392" fill="#1c1c21"/>
-<circle cx="${C}" cy="${C}" r="378" fill="url(#${u}-cotes)"/>
+${disc('cotes', u, 378)}
 <circle cx="${C}" cy="${C}" r="378" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
 <path d="M300,250 h250 a40,40 0 0,1 40,40 v70 a40,40 0 0,1 -40,40 h-250 a40,40 0 0,1 -40,-40 v-70 a40,40 0 0,1 40,-40 z" fill="#2b2b31" stroke="${v.metal[1]}" stroke-opacity=".5" stroke-width="2"/>
 <path d="M170,560 h200 a40,40 0 0,1 40,40 v120 a40,40 0 0,1 -40,40 h-200 a40,40 0 0,1 -40,-40 v-120 a40,40 0 0,1 40,-40 z" fill="#2b2b31" stroke="${v.metal[1]}" stroke-opacity=".5" stroke-width="2"/>
@@ -184,7 +252,7 @@ ${orbits.map(r => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${
 ${[[500, 500], [330, 420], [668, 408], [392, 660], [300, 720], [560, 300], [240, 580]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="url(#${u}-ruby)"/>`).join('')}
 ${[[300, 250, 20], [550, 250, 70], [170, 560, 110], [370, 760, 40], [780, 540, 95], [620, 180, 0]].map(([x, y, a]) => `<g transform="translate(${x} ${y}) rotate(${a})"><circle r="12" fill="url(#${u}-metal3)"/><line x1="-8" y1="0" x2="8" y2="0" stroke="rgba(0,0,0,.7)" stroke-width="2.5"/></g>`).join('')}
 <g class="rotor" transform="rotate(0 ${C} ${C})">
-  <path d="M${C},${C} L${C + 300},${C} A300,300 0 0,1 ${C - 300},${C} Z" fill="url(#${u}-cotes)" opacity=".92"/>
+  ${disc('cotes', u, 300, '.92', u + '-rotorclip')}
   <path d="M${C},${C} L${C + 300},${C} A300,300 0 0,1 ${C - 300},${C} Z" fill="none" stroke="${v.metal[1]}" stroke-opacity=".7" stroke-width="3"/>
   <path d="M${C - 300},${C} A300,300 0 0,0 ${C + 300},${C}" fill="none" stroke="${v.metal[0]}" stroke-opacity=".35" stroke-width="1.5"/>
   <text class="back-text" fill="${v.metal[1]}" opacity=".85"><textPath href="#${u}-arcin" startOffset="27%">Orrery · Genève</textPath></text>

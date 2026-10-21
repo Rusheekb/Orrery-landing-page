@@ -298,10 +298,11 @@
     if (touch) return;
     const items = Array.from(els).map(el => ({ el, label: el.querySelector('.btn__label'), x: 0, y: 0 }));
     ORR.onFrame(dt => {
-      for (const it of items) {
-        const r = it.el.getBoundingClientRect();
+      const rects = items.map(it => it.el.getBoundingClientRect()); // all reads before any write
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i], r = rects[i];
         if (r.bottom < -100 || r.top > vp.h + 100) { if (it.x || it.y) { it.x = it.y = 0; it.el.style.transform = ''; if (it.label) it.label.style.transform = ''; } continue; }
-        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const cx = r.left + r.width / 2 - it.x, cy = r.top + r.height / 2 - it.y; // rest position, not the pulled one
         const dx = pointer.x - cx, dy = pointer.y - cy;
         const R = Math.max(r.width, r.height) * 0.85 + 36;
         const d = Math.hypot(dx, dy);

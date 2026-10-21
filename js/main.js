@@ -56,8 +56,9 @@
     if (heroGlare) { const gx = 380 + P.snx * 140, gy = 300 + P.sny * 120; heroGlare.setAttribute('cx', gx.toFixed(1)); heroGlare.setAttribute('cy', gy.toFixed(1)); heroGlare.setAttribute('transform', `rotate(-32 ${gx.toFixed(1)} ${gy.toFixed(1)})`); }
     // letters flee the cursor
     if (titleSettled && !touch) {
-      for (const c of heroChars) {
-        const r = c.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const rects = heroChars.map(c => c.getBoundingClientRect()); // all reads before any write
+      for (let i = 0; i < heroChars.length; i++) {
+        const c = heroChars[i], r = rects[i]; const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
         const dx = cx - P.x, dy = cy - P.y; const d = Math.hypot(dx, dy); const R = 300;
         let tx = 0, ty = 0, rot = 0;
         if (d < R) { const f = (1 - d / R); const f2 = f * f; tx = (dx / d) * f2 * 46; ty = (dy / d) * f2 * 46; rot = (dx / d) * f2 * -6; }
@@ -223,7 +224,11 @@
   }
   setAnatomy(0);
   let stageSize = 0; ORR.on('resize', () => { stageSize = stage.offsetWidth; });
+  let anatomyVisible = false, lastAP = -1;
+  new IntersectionObserver(en => { anatomyVisible = en[0].isIntersecting; }, { threshold: 0 }).observe($('#anatomy'));
   ORR.scrub($('#anatomy'), (p, s, dt) => {
+    if (!anatomyVisible && p === lastAP) return; // off-screen: nothing to animate
+    lastAP = p;
     if (!stageSize) stageSize = stage.offsetWidth || 400;
     const e = u.smoothstep(0.04, 0.5, p) * (1 - u.smoothstep(0.86, 1, p));
     const mobile = isMobile();
@@ -303,6 +308,7 @@
   (function initGuilloche() {
     const canvas = $('#guillocheCanvas'); const ctx = canvas.getContext('2d');
     let w = 1, h = 1, dpr = 1, visible = false, phase = 0, mx = -1e4, my = -1e4, press = 0;
+    const TH = [], COS = [], SIN = []; for (let k = 0; k <= 200; k++) { const th = (k / 200) * Math.PI * 2; TH.push(th); COS.push(Math.cos(th)); SIN.push(Math.sin(th)); }
     function resize() { const r = canvas.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio || 1, 1.5); w = Math.max(1, r.width); h = Math.max(1, r.height); canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
     resize(); ORR.on('resize', resize);
     new IntersectionObserver(en => { visible = en[0].isIntersecting; }, { threshold: 0 }).observe(canvas);
@@ -319,17 +325,18 @@
       ctx.fillStyle = '#0a0907'; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.fill();
       const sig = R * 0.38, amp = R * 0.08 * press;
       const fam = [{ n: 46, waves: 36, a: 0.012, alpha: 0.30, r0: 0.08, r1: 0.95 }, { n: 22, waves: 11, a: 0.03, alpha: 0.13, r0: 0.2, r1: 0.9 }];
+      const warpOn = amp > 0.02; // the stylus only bends the lines while a pointer is on the plate
+      const sig2 = sig * sig;
       for (const F of fam) {
         ctx.strokeStyle = `rgba(201,164,92,${F.alpha})`; ctx.lineWidth = 0.8;
         for (let i = 0; i < F.n; i++) {
           const rr = R * (F.r0 + (F.r1 - F.r0) * i / (F.n - 1));
-          const N = 200; ctx.beginPath();
-          for (let k = 0; k <= N; k++) {
-            const th = (k / N) * Math.PI * 2;
-            const wave = rr + R * F.a * Math.sin(F.waves * th + i * 0.5 + phase * (i % 2 ? 1 : -1));
-            let x = cx + wave * Math.cos(th), y = cy + wave * Math.sin(th);
-            const dx = x - mx, dy = y - my; const d2 = dx * dx + dy * dy; const g = Math.exp(-d2 / (sig * sig)) * amp; const d = Math.sqrt(d2) || 1;
-            x += (dx / d) * g; y += (dy / d) * g;
+          const ph = i * 0.5 + phase * (i % 2 ? 1 : -1); const amp2 = R * F.a;
+          ctx.beginPath();
+          for (let k = 0; k <= 200; k++) {
+            const wave = rr + amp2 * Math.sin(F.waves * TH[k] + ph);
+            let x = cx + wave * COS[k], y = cy + wave * SIN[k];
+            if (warpOn) { const dx = x - mx, dy = y - my; const d2 = dx * dx + dy * dy; const g = Math.exp(-d2 / sig2) * amp; const d = Math.sqrt(d2) || 1; x += (dx / d) * g; y += (dy / d) * g; }
             if (k) ctx.lineTo(x, y); else ctx.moveTo(x, y);
           }
           ctx.stroke();
@@ -366,8 +373,10 @@
      Reserve: glow + form
      ===================================================================== */
   const reserve = $('#reserve'), form = $('#reserveForm'), email = $('#reserveEmail'), note = $('#reserveNote'), submit = $('#reserveSubmit');
-  let glowX = -1, glowY = -1;
+  let glowX = -1, glowY = -1, reserveVisible = false;
+  new IntersectionObserver(en => { reserveVisible = en[0].isIntersecting; }, { threshold: 0 }).observe(reserve);
   ORR.onFrame(() => {
+    if (!reserveVisible) return;
     const r = reserve.getBoundingClientRect(); if (r.bottom < 0 || r.top > VP.h) return;
     const mx = (P.sx - r.left) / r.width * 100, my = (P.sy - r.top) / r.height * 100;
     if (Math.abs(mx - glowX) < 0.08 && Math.abs(my - glowY) < 0.08) return;
