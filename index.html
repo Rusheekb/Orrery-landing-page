@@ -11,8 +11,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
+<noscript><style>
+  .loader { display: none; }
+  body.is-loading { overflow: visible; }
+  body.is-loading .nav { opacity: 1; transform: none; pointer-events: auto; }
+  [data-reveal], .hero__sub, .hero__ctas { opacity: 1; transform: none; }
+  .hero__watch { opacity: 1; clip-path: none; }
+  .anatomy, .collection { height: auto; }
+  .anatomy__pin, .collection__pin { position: static; height: auto; }
+  .collection__track { flex-wrap: wrap; }
+  .anatomy__hint, .collection__hint { display: none; }
+</style></noscript>
 </head>
 <body class="is-loading">
+<a class="skip" href="#main">Skip to content</a>
 
 <div class="grain" aria-hidden="true"></div>
 <div class="progress" aria-hidden="true"><i></i></div>
@@ -50,7 +62,7 @@
     <a href="#reserve" data-scramble>Reserve</a>
   </nav>
   <div class="nav__right">
-    <span class="nav__time" id="navTime" aria-label="Current time in Geneva">GVA 00:00:00</span>
+    <span class="nav__time" id="navTime"><span class="sr-only">Geneva time </span><span id="navTimeValue">GVA 00:00:00</span></span>
     <button class="nav__sound" id="soundToggle" type="button" aria-pressed="false">
       <span class="nav__sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
       <span class="nav__sound-label">Sound</span>
@@ -110,7 +122,7 @@
   <!-- MANIFESTO -->
   <section class="manifesto" id="manifesto" data-bg="#0a0a0e">
     <div class="manifesto__inner">
-      <p class="section-label mono" data-reveal><span>I</span> Manifesto</p>
+      <h2 class="section-label mono" data-reveal><span aria-hidden="true">I</span> Manifesto</h2>
       <p class="manifesto__text" id="manifestoText">A watch should not tell you the time. It should remind you that you are standing on a planet, falling around a star, at sixty-seven thousand miles an hour. Everything else is a complication.</p>
       <p class="manifesto__sign" data-reveal>— A. Vautrin, founder</p>
     </div>
@@ -120,7 +132,7 @@
   <section class="anatomy" id="anatomy" data-bg="#07070a">
     <div class="anatomy__pin">
       <div class="anatomy__head">
-        <p class="section-label mono"><span>II</span> Anatomy</p>
+        <p class="section-label mono"><span aria-hidden="true">II</span> Anatomy</p>
         <h2 class="anatomy__title">Anatomy of a <em>Perihelion</em></h2>
       </div>
 
@@ -153,7 +165,7 @@
     <div class="collection__pin">
       <div class="collection__head">
         <div class="collection__head-text">
-          <p class="section-label mono" data-reveal><span>III</span> Collection</p>
+          <p class="section-label mono" data-reveal><span aria-hidden="true">III</span> Collection</p>
           <h2 class="collection__title" data-reveal>Four calibres. <em>Nine</em> pieces each.</h2>
         </div>
         <p class="collection__hint mono" aria-hidden="true">Scroll to glide <i></i></p>
@@ -212,7 +224,7 @@
     <canvas class="planetarium__canvas" id="planetariumCanvas" aria-hidden="true"></canvas>
     <div class="planetarium__inner">
       <div class="planetarium__copy">
-        <p class="section-label mono" data-reveal><span>IV</span> Planetarium</p>
+        <p class="section-label mono" data-reveal><span aria-hidden="true">IV</span> Planetarium</p>
         <h2 class="planetarium__title" data-reveal>The sky, <em>worn.</em></h2>
         <p class="planetarium__text" data-reveal>The Perihelion complication tracks the true heliocentric position of six planets. Set once at the atelier, it needs no correction for 1,142 years. <span class="pointer-only">Move your cursor</span><span class="touch-only">Drag across the sky</span> to bend the orbits. The mechanism will forgive you.</p>
         <dl class="planetarium__stats" data-reveal>
@@ -233,7 +245,7 @@
   <section class="atelier" id="atelier" data-bg="#0d0b09">
     <div class="atelier__inner">
       <div class="atelier__copy">
-        <p class="section-label mono" data-reveal><span>V</span> Atelier</p>
+        <p class="section-label mono" data-reveal><span aria-hidden="true">V</span> Atelier</p>
         <h2 class="atelier__title" data-reveal><span class="nowrap">Eleven people.</span> <span class="nowrap">Nine watches.</span> <em class="nowrap">One year.</em></h2>
         <p class="atelier__text" data-reveal>Every Orrery is finished by hand in a workshop above the Rhône. We do not have a production line. We have a table, eleven pairs of hands, and a rose engine built in 1911.</p>
       </div>
@@ -243,11 +255,11 @@
       </div>
     </div>
     <dl class="stats" data-reveal>
-      <div class="stats__item"><dd><span data-count="412">0</span></dd><dt class="mono">Components</dt></div>
-      <div class="stats__item"><dd><span data-count="72">0</span>h</dd><dt class="mono">Power reserve</dt></div>
-      <div class="stats__item"><dd><span data-count="9">0</span></dd><dt class="mono">Pieces a year</dt></div>
-      <div class="stats__item"><dd><span data-count="1142">0</span></dd><dt class="mono">Years before a day's drift</dt></div>
-      <div class="stats__item"><dd><span data-count="0">0</span></dd><dt class="mono">Shortcuts</dt></div>
+      <div class="stats__item"><dt class="mono">Components</dt><dd><span data-count="412">0</span></dd></div>
+      <div class="stats__item"><dt class="mono">Power reserve</dt><dd><span data-count="72">0</span>h</dd></div>
+      <div class="stats__item"><dt class="mono">Pieces a year</dt><dd><span data-count="9">0</span></dd></div>
+      <div class="stats__item"><dt class="mono">Years before a day's drift</dt><dd><span data-count="1142">0</span></dd></div>
+      <div class="stats__item"><dt class="mono">Shortcuts</dt><dd><span data-count="0">0</span></dd></div>
     </dl>
     <div class="marquee" id="marquee" aria-hidden="true">
       <div class="marquee__track" id="marqueeTrack">
@@ -260,20 +272,20 @@
   <section class="reserve" id="reserve" data-bg="#07070a">
     <div class="reserve__glow" aria-hidden="true"></div>
     <div class="reserve__inner">
-      <p class="section-label mono" data-reveal><span>VI</span> Reserve</p>
+      <p class="section-label mono" data-reveal><span aria-hidden="true">VI</span> Reserve</p>
       <h2 class="reserve__title" id="reserveTitle">Keep your <em>own</em> time.</h2>
       <p class="reserve__text" data-reveal>Allocation opens twice a year, to a list we keep by hand. Leave an address and we will write to you. On paper.</p>
       <form class="reserve__form" id="reserveForm" data-reveal novalidate>
         <label class="field">
           <span class="field__label mono">Your address</span>
-          <input class="field__input" id="reserveEmail" type="email" name="email" placeholder="name@house.com" autocomplete="email" required>
+          <input class="field__input" id="reserveEmail" type="email" name="email" placeholder="name@house.com" autocomplete="email" aria-describedby="reserveNote" required>
           <i class="field__line"></i>
         </label>
         <button class="btn btn--ghost magnetic" type="submit" id="reserveSubmit">
           <span class="btn__fill"></span>
           <span class="btn__label">Request an audience</span>
         </button>
-        <p class="reserve__note mono" id="reserveNote" aria-live="polite">No newsletter. One letter, when a piece is yours to claim.</p>
+        <p class="reserve__note mono" id="reserveNote" aria-live="polite"><span class="sr-only" id="reserveNoteText">No newsletter. One letter, when a piece is yours to claim.</span><span aria-hidden="true" id="reserveNoteFx">No newsletter. One letter, when a piece is yours to claim.</span></p>
       </form>
     </div>
   </section>

@@ -188,7 +188,8 @@
   ORR.split = (el, mode) => {
     mode = mode || 'chars';
     const label = el.textContent.replace(/\s+/g, ' ').trim();
-    el.setAttribute('aria-label', label);
+    const isHeading = /^H[1-6]$/.test(el.tagName);
+    if (isHeading) el.setAttribute('aria-label', label);
     let i = 0, html = '';
     const walk = node => {
       for (const child of Array.from(node.childNodes)) {
@@ -207,7 +208,8 @@
       }
     };
     walk(el);
-    el.innerHTML = html;
+    // headings may carry an author name; anything else keeps real text in the tree
+    el.innerHTML = isHeading ? html : `<span class="sr-only">${esc(label)}</span><span aria-hidden="true">${html}</span>`;
     el.querySelectorAll('.w').forEach(s => s.setAttribute('aria-hidden', 'true'));
     el.style.setProperty('--n', i);
     el.dataset.splitCount = i;
@@ -222,6 +224,8 @@
     if (reduced) { el.textContent = text; return; }
     const start = performance.now(); const len = text.length;
     el.__scr = start;
+    const keepName = /^(H[1-6]|A|BUTTON)$/.test(el.tagName); // the accessible name never scrambles
+    if (keepName) el.setAttribute('aria-label', text);
     const step = now => {
       if (el.__scr !== start) return;
       const t = clamp((now - start) / dur, 0, 1); let out = '';
@@ -231,7 +235,7 @@
         out += t >= (i / len) * 0.8 + 0.12 ? ch : CH[(Math.random() * CH.length) | 0];
       }
       el.textContent = out;
-      if (t < 1) requestAnimationFrame(step); else el.textContent = text;
+      if (t < 1) requestAnimationFrame(step); else { el.textContent = text; if (keepName) el.removeAttribute('aria-label'); }
     };
     requestAnimationFrame(step);
   };

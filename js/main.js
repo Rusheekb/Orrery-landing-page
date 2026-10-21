@@ -116,7 +116,7 @@
   /* =====================================================================
      Nav: clock, hide on scroll, scramble, anchors, menu, sound
      ===================================================================== */
-  const nav = $('#nav'), navTime = $('#navTime');
+  const nav = $('#nav'), navTime = $('#navTimeValue');
   const fmtTime = tz => new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const gvaFmt = fmtTime('Europe/Zurich');
   const clocks = $$('.clock').map(el => ({ el: el.querySelector('.clock__time'), f: fmtTime(el.dataset.tz) }));
@@ -145,8 +145,15 @@
     menuToggle.setAttribute('aria-expanded', String(open));
     document.body.classList.toggle('menu-open', open); document.documentElement.classList.toggle('menu-open', open);
     SC.lock = open;
+    for (const el of inertWhileLoading) { try { el.inert = open; } catch (e) { /* ignore */ } } // the page behind the menu leaves the tab order
     if (open) setTimeout(() => menuClose.focus(), 350); else menuToggle.focus();
   }
+  menu.addEventListener('keydown', e => { // wrap Tab inside the menu for engines without inert
+    if (e.key !== 'Tab') return;
+    const f = [menuClose, ...menu.querySelectorAll('.menu__links a')]; const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
   menuToggle.addEventListener('click', () => setMenu(!menu.classList.contains('is-open')));
   menuClose.addEventListener('click', () => setMenu(false));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
@@ -158,6 +165,12 @@
     const y = target.getBoundingClientRect().top + window.scrollY;
     ORR.scrollTo(y, reduced);
     if (history.replaceState) history.replaceState(null, '', '#' + id);
+    // move the focus start point with the view, as native fragment navigation would
+    setTimeout(() => {
+      if (id === 'reserve') { $('#reserveEmail').focus({ preventScroll: true }); return; }
+      target.tabIndex = -1; target.focus({ preventScroll: true });
+      target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+    }, reduced ? 0 : 900);
   }));
 
   // Sound: a synthesised escapement tick, opt-in
@@ -272,6 +285,15 @@
     }
   });
   let trackMax = 0;
+  // keyboard focus drives the glide: a focused card is brought on screen
+  track.addEventListener('focusin', e => {
+    if (isMobile()) return; const card = e.target.closest('.card'); if (!card) return;
+    if (!trackMax) measureTrack();
+    const sec = $('#collection'); const top = sec.getBoundingClientRect().top + window.scrollY;
+    const gutter = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+    const q = u.clamp((card.offsetLeft - gutter + card.offsetWidth / 2 - VP.w / 2) / (trackMax || 1), 0, 1);
+    ORR.scrollTo(top + (0.05 + 0.92 * q) * (sec.offsetHeight - VP.h), true);
+  });
   function measureTrack() { const pr = parseFloat(getComputedStyle(track).paddingRight) || 0; trackMax = Math.max(0, track.scrollWidth + pr - VP.w); }
   ORR.on('resize', measureTrack); setTimeout(measureTrack, 50);
   const cardInners = cards.map(c => c.querySelector('.card__watch'));
@@ -383,13 +405,18 @@
     glowX = mx; glowY = my;
     reserve.style.setProperty('--mx', mx.toFixed(2) + '%'); reserve.style.setProperty('--my', my.toFixed(2) + '%');
   });
+  const noteText = $('#reserveNoteText'), noteFx = $('#reserveNoteFx');
+  const say = (msg, dur) => { noteText.textContent = msg; ORR.scramble(noteFx, msg, dur); }; // the live region gets the text once; the scramble is decorative
   form.addEventListener('submit', e => {
     e.preventDefault();
     const v = email.value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { ORR.scramble(note, 'That address does not look right. Try again.', 600); email.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { email.setAttribute('aria-invalid', 'true'); say('That address does not look right. Try again.', 600); email.focus(); return; }
+    email.removeAttribute('aria-invalid');
     form.classList.add('is-sent');
     ORR.scramble(submit.querySelector('.btn__label'), 'Received', 700);
-    ORR.scramble(note, 'Received. Expect a letter within the month, addressed by hand.', 900);
+    say('Received. Expect a letter within the month, addressed by hand.', 900);
+    email.disabled = true; submit.disabled = true;
+    note.tabIndex = -1; note.focus({ preventScroll: true });
   });
 
   /* =====================================================================
