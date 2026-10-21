@@ -2,7 +2,9 @@
 
 A single-page, zero-dependency luxury landing page for **Orrery**, a fictional Geneva maison that makes nine planetarium wristwatches a year. Built to show what scroll-, cursor- and time-driven motion design can do with nothing but HTML, CSS, raw WebGL, SVG and canvas.
 
-**Live preview:** open `index.html` from any static server (e.g. `npx serve .`) or enable GitHub Pages on this repository (Settings → Pages → Deploy from branch → `main` / root).
+**Live site:** https://rusheekb.github.io/fable-landing-page/
+
+To run it locally, open `index.html` from any static server (e.g. `npx serve .`).
 
 ## What's in it
 
